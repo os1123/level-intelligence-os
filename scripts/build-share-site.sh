@@ -21,6 +21,10 @@ if [[ -f "${OUTPUT_DIR}/index.html" ]]; then
 fi
 
 # Include the live demo page in the published bundle.
+if [[ -f "${ROOT}/level-intelligence-os-interactive.html" ]]; then
+  cp "${ROOT}/level-intelligence-os-interactive.html" "${OUTPUT_DIR}/"
+fi
+
 if [[ -f "${ROOT}/level-intelligence-os-demo.html" ]]; then
   cp "${ROOT}/level-intelligence-os-demo.html" "${OUTPUT_DIR}/"
 fi
