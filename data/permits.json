@@ -1,0 +1,1185 @@
+{
+  "generatedAt": "2026-07-08T11:52:00.438Z",
+  "version": 1,
+  "source": {
+    "endpoint": "https://data.cityofchicago.org/resource/ydr8-5enu.json",
+    "issueAfter": "2026-01-01T00:00:00",
+    "permitTypes": [
+      "PERMIT - NEW CONSTRUCTION",
+      "PERMIT - RENOVATION/ALTERATION",
+      "PERMIT - RENOVATION / ALTERATION",
+      "PERMIT – RENOVATION/ALTERATION",
+      "PERMIT – NEW CONSTRUCTION",
+      "PERMIT – EXPRESS PERMIT PROGRAM",
+      "PERMIT - EXPRESS PERMIT PROGRAM"
+    ],
+    "cityKeywordFilter": [
+      "restaurant",
+      "kitchen",
+      "hood",
+      "cafe",
+      "bar",
+      "tenant",
+      "build-out",
+      "buildout",
+      "retail",
+      "food",
+      "dining",
+      "take out",
+      "counter",
+      "kitchen renovation",
+      "tenant improvement"
+    ],
+    "limit": 600,
+    "mode": "mock-free prototype"
+  },
+  "stats": {
+    "fetchedRows": 600,
+    "filteredRows": 105,
+    "scoredRows": 15,
+    "model": "heuristic",
+    "pilotStart": "2026-07-08T11:52:00.439Z"
+  },
+  "opportunities": [
+    {
+      "id": "101075489",
+      "addr": "3455 N ELSTON AVE",
+      "hood": "21",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 65,
+      "rec": "watch",
+      "cost": 700000,
+      "sqft": "—",
+      "filed": "Jul 6",
+      "filedDate": "2026-07-06T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SPR 2019 CBRC: INTERIOR/EXTERIOR RENOVATIONS TO CONVERT EXISTING WAREHOUSE INTO ANIMAL SERVICES SHELTER/BOARDING KENNEL, SALES AND GROOMING. INDOOR DOG PLAY PARK W/ BAR, SEPARATE COFFEE SHOP SUITE & NEW REAR CONCRETE STE",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jul 6, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101075489 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jul 6, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 65 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101075489",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101075489",
+        "communityArea": "21",
+        "ward": "33"
+      }
+    },
+    {
+      "id": "B200476721",
+      "addr": "300 S DAMEN AVE",
+      "hood": "28",
+      "type": "PERMIT – EXPRESS PERMIT PROGRAM",
+      "score": 65,
+      "rec": "watch",
+      "cost": 379362,
+      "sqft": "—",
+      "filed": "Jul 2",
+      "filedDate": "2026-07-02T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "REPAIR OR IN-KIND REPLACEMENT OF 80 PLUMBING FIXTURES AS DESCRIBED IN PERMIT APPLICATION. INCLUDES REPAIR OR REPLACEMENT OF PLUMBING RISERS IN EXISTING CHASES. LOCATIONS: 80 RESIDENTIAL UNIT(S), 0 NON-RESIDENTIAL UNIT(S)",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jul 2, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit B200476721 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jul 2, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 65 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT – EXPRESS PERMIT PROGRAM",
+        "permitStatus": "",
+        "rawId": "B200476721",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=B200476721",
+        "communityArea": "28",
+        "ward": "27"
+      }
+    },
+    {
+      "id": "101084149",
+      "addr": "5255 N BROADWAY",
+      "hood": "77",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 53,
+      "rec": "watch",
+      "cost": 145000,
+      "sqft": "—",
+      "filed": "Jul 1",
+      "filedDate": "2026-07-01T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF CERT 2019 CBRC: INTERIOR ALTERATIONS TO EXISTING 1 STORY RETAIL BUILDING. ALTERATIONS TO INCLUDE NEW PARTITIONS, MECHANICAL, ELECTRICAL AND PLUMBING AS PER PLANS. NO EXTERIOR WORK. (OCCUPANCY GROUP M-MERCANTILE; IIB",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "dn",
+          "t": "Low reported cost creates limited upside relative to mobilization burden."
+        },
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101084149 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 53 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101084149",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101084149",
+        "communityArea": "77",
+        "ward": "48"
+      }
+    },
+    {
+      "id": "101084147",
+      "addr": "5247 N BROADWAY",
+      "hood": "77",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 53,
+      "rec": "watch",
+      "cost": 165000,
+      "sqft": "—",
+      "filed": "Jul 1",
+      "filedDate": "2026-07-01T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF CERT 2019 CBRC: INTERIOR ALTERATIONS TO EXISTING 1 STORY RETAIL BUILDING. ALTERATIONS TO INCLUDE NEW PARTITIONS, MECHANICAL, ELECTRICAL AND PLUMBING AS PER PLANS. NO EXTERIOR WORK. (OCCUPANCY GROUP M-MERCANTILE; IIB",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "dn",
+          "t": "Low reported cost creates limited upside relative to mobilization burden."
+        },
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101084147 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 53 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101084147",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101084147",
+        "communityArea": "77",
+        "ward": "48"
+      }
+    },
+    {
+      "id": "101085502",
+      "addr": "1451 E 55TH ST",
+      "hood": "41",
+      "type": "PERMIT - ELEVATOR EQUIPMENT",
+      "score": 53,
+      "rec": "watch",
+      "cost": 157000,
+      "sqft": "—",
+      "filed": "Jul 1",
+      "filedDate": "2026-07-01T07:00:00.000Z",
+      "status": "Under review",
+      "desc": "REPLACEMENT OF COUNTERWEIGHT SWITCHES, GOVERNOR CABLES, GOVERNOR TAIL SHEAVES, TRAVELER CABLES, BOTTOM CAR GUIDES, COUNTERWEIGHT GUIDES AND SELECTOR SWITCHES, DUE TO WATER DAMAGE ON TWO(2) 2000LB CAPACITY, 11-FLOOR, PASS",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "dn",
+          "t": "Low reported cost creates limited upside relative to mobilization burden."
+        },
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101085502 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 53 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - ELEVATOR EQUIPMENT",
+        "permitStatus": "",
+        "rawId": "101085502",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101085502",
+        "communityArea": "41",
+        "ward": "5"
+      }
+    },
+    {
+      "id": "101084993",
+      "addr": "454 N COLUMBUS DR",
+      "hood": "8",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 85,
+      "rec": "pursue",
+      "cost": 800000,
+      "sqft": "—",
+      "filed": "Jul 1",
+      "filedDate": "2026-07-01T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF-CERT 2019 CBRC - INTERIOR DEMOLITION OF AN EXISTING TENANT SPACE. NO NEW CONSTRUCTION. NO CHANGE IN OCCUPANCY OR USE. (OCCUPANCY GROUP B; TYPE IA CONSTRUCTION)",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "<b>$0.80M</b> sits near Level's preferred deal band."
+        },
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101084993 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 85 / PURSUE using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101084993",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101084993",
+        "communityArea": "8",
+        "ward": "42"
+      }
+    },
+    {
+      "id": "101084995",
+      "addr": "455 N COLUMBUS DR",
+      "hood": "8",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 65,
+      "rec": "watch",
+      "cost": 475000,
+      "sqft": "—",
+      "filed": "Jul 1",
+      "filedDate": "2026-07-01T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF-CERT 2019 CBRC - INTERIOR DEMOLITION OF AN EXISTING TENANT SPACE. NO NEW CONSTRUCTION. NO CHANGE IN OCCUPANCY OR USE. (OCCUPANCY GROUP B; TYPE IA CONSTRUCTION)",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101084995 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 65 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101084995",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101084995",
+        "communityArea": "8",
+        "ward": "42"
+      }
+    },
+    {
+      "id": "101075765",
+      "addr": "2750 S CALIFORNIA AVE",
+      "hood": "30",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 65,
+      "rec": "watch",
+      "cost": 500000,
+      "sqft": "—",
+      "filed": "Jul 1",
+      "filedDate": "2026-07-01T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "REPLACE 55 EXISTING STAIR FIRE DOORS WITH NEW FIRE DOORS THAT HAVE PUSH BAR PANIC HARDWARE.",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101075765 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jul 1, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 65 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101075765",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101075765",
+        "communityArea": "30",
+        "ward": "24"
+      }
+    },
+    {
+      "id": "101083091",
+      "addr": "939 W NORTH AVE",
+      "hood": "8",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 65,
+      "rec": "watch",
+      "cost": 550000,
+      "sqft": "—",
+      "filed": "Jun 30",
+      "filedDate": "2026-06-30T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF-CERT 2019 CBRC:  INTERIOR BUILD OUT OF A NEW TJ MAXX RETAIL STORE IN AN EXISTING VACANT SPACE.  NEW MECHANICAL, CARPENTRY, PLUMBING, AND ELECTRICAL SCOPE.  NO WORK IS PROPOSED WITHIN THE RETAIL UNITS ABOVE. (OCCUPAN",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jun 30, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101083091 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jun 30, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 65 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101083091",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101083091",
+        "communityArea": "8",
+        "ward": "27"
+      }
+    },
+    {
+      "id": "101083906",
+      "addr": "222 W ADAMS ST",
+      "hood": "32",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 65,
+      "rec": "watch",
+      "cost": 514000,
+      "sqft": "—",
+      "filed": "Jun 30",
+      "filedDate": "2026-06-30T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF CERT 2019 CBRC:  STRUCTURAL PEER REVIEW INCLUDED. INTERIOR ALTERATIONS TO EXISTING 26TH FLOOR TO DEMISE THE SPACE FROM ONE TO TWO TENANTS AND REMOVE AN INTERCONNECTING STAIR BETWEEN FLOORS 25 AND 26 WITHIN THE TENAN",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jun 30, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101083906 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jun 30, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 65 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101083906",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101083906",
+        "communityArea": "32",
+        "ward": "42"
+      }
+    },
+    {
+      "id": "101084816",
+      "addr": "2344 S STATE ST",
+      "hood": "33",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 53,
+      "rec": "watch",
+      "cost": 133650,
+      "sqft": "—",
+      "filed": "Jun 30",
+      "filedDate": "2026-06-30T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF CERT: (2340 S STATE ST) INTERIOR TENANT IMPROVEMENTS",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "dn",
+          "t": "Low reported cost creates limited upside relative to mobilization burden."
+        },
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jun 30, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101084816 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jun 30, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 53 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101084816",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101084816",
+        "communityArea": "33",
+        "ward": "3"
+      }
+    },
+    {
+      "id": "101085104",
+      "addr": "10 E DELAWARE PL",
+      "hood": "8",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 53,
+      "rec": "watch",
+      "cost": 117000,
+      "sqft": "—",
+      "filed": "Jun 30",
+      "filedDate": "2026-06-30T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF-CERT 2019 CBRC: INTERIOR DEMOLITION OF THE NON-LOAD BEARING PARTITIONS, ELECTRICAL, PLUMBING, AND HVAC WITHIN THE OF THE EXISTING GROUND FLOOR RETAIL SPACE.  (OCCUPANCY GROUP B; TYPE IIB CONSTRUCTION)",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "dn",
+          "t": "Low reported cost creates limited upside relative to mobilization burden."
+        },
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jun 30, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101085104 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jun 30, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 53 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101085104",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101085104",
+        "communityArea": "8",
+        "ward": "42"
+      }
+    },
+    {
+      "id": "101085025",
+      "addr": "4770 S KEDZIE AVE",
+      "hood": "58",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 65,
+      "rec": "watch",
+      "cost": 350000,
+      "sqft": "—",
+      "filed": "Jun 29",
+      "filedDate": "2026-06-29T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "SELF-CERT 2019 CBRC: INTERIOR RENOVATION TO AN EXISTING 1-STORY BUILDING FOR THE EXISTING TENANT, CITY OF CHICAGO DEPARTMENT OF FINANCE OFFICE SPACE. WORK INCLUDES INTERIOR ARCHITECTURAL ALTERATIONS AND RELATED MECHANICA",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jun 29, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101085025 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jun 29, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 65 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101085025",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101085025",
+        "communityArea": "58",
+        "ward": "14"
+      }
+    },
+    {
+      "id": "101076976",
+      "addr": "5869 N MILWAUKEE AVE",
+      "hood": "10",
+      "type": "PERMIT - NEW CONSTRUCTION",
+      "score": 85,
+      "rec": "pursue",
+      "cost": 1700000,
+      "sqft": "—",
+      "filed": "Jun 29",
+      "filedDate": "2026-06-29T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "DDS 2019 CBC: NEW CONSTRUCTION OF A 1-STORY FROZEN CUSTARD STORE (LIMITED RESTAURANT) W/ DRIVE-THRU FACILITY, OUTDOOR PATIO AND TRASH ENCLOSURE AT GRADE. 21 ON-SITE AUTOMOBILE PARKING SPACES AND 7 BICYCLE PARKING SPACES.",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "<b>$1.70M</b> sits near Level's preferred deal band."
+        },
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jun 29, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101076976 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jun 29, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 85 / PURSUE using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - NEW CONSTRUCTION",
+        "permitStatus": "",
+        "rawId": "101076976",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101076976",
+        "communityArea": "10",
+        "ward": "45"
+      }
+    },
+    {
+      "id": "101067272",
+      "addr": "3333 N DAMEN AVE",
+      "hood": "5",
+      "type": "PERMIT - RENOVATION/ALTERATION",
+      "score": 65,
+      "rec": "watch",
+      "cost": 300000,
+      "sqft": "—",
+      "filed": "Jun 29",
+      "filedDate": "2026-06-29T07:00:00.000Z",
+      "status": "ACTIVE",
+      "desc": "RENOVATION OF EXISTING A-2 ASSEMBLY BAR IN 2-STORY EATING & DRINKING ESTABLISHMENT TAVERN TYPE V-B MIXED-USE BUILDING IN B3-2 ZONING DISTRICT. NO CHANGE IN USE.MEP'S INCLUDED. SCOPE OF WORK 3,950 SF.",
+      "owner": "Unknown owner",
+      "brand": "Prospective operator",
+      "contractor": "Not yet selected",
+      "arch": "—",
+      "reasons": [
+        {
+          "d": "up",
+          "t": "No GC named yet; pursuit window is still open."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        },
+        {
+          "d": "nu",
+          "t": "Signal quality and fit are pending on owner-level confirmation from linked records."
+        }
+      ],
+      "actions": [
+        {
+          "ic": "✦",
+          "t": "Generate owner brief",
+          "d": "Resolve Unknown owner principal and recent history before outreach.",
+          "gate": false,
+          "primary": true
+        },
+        {
+          "ic": "✎",
+          "t": "Draft go/no-go memo",
+          "d": "Summarize scope, margins, and timing risks from permit signal and internal rubric.",
+          "gate": false
+        },
+        {
+          "ic": "✉",
+          "t": "Draft intro to owner",
+          "d": "Draft outreach if pursuit criteria are met and approval is granted.",
+          "gate": true
+        }
+      ],
+      "tl": [
+        {
+          "when": "Jun 29, 12:00 AM",
+          "who": "Opportunity Scout",
+          "what": "Detected permit 101067272 in Chicago permit feed.",
+          "agent": true
+        },
+        {
+          "when": "Jun 29, 12:00 AM",
+          "who": "Qualification Agent",
+          "what": "Scored 65 / WATCH using configured rubric + model output.",
+          "agent": true
+        }
+      ],
+      "scoreModel": "heuristic",
+      "source": {
+        "permitType": "PERMIT - RENOVATION/ALTERATION",
+        "permitStatus": "",
+        "rawId": "101067272",
+        "rawUrl": "https://data.cityofchicago.org/resource/ydr8-5enu.json?permit_=101067272",
+        "communityArea": "5",
+        "ward": "32"
+      }
+    }
+  ]
+}

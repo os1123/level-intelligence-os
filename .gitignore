@@ -4,6 +4,5 @@
 
 # Local generated outputs
 share-site/
-data/permits.json
 data/history/*.json
 node_modules/
