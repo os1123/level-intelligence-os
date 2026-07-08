@@ -1,0 +1,17 @@
+{
+  "name": "level-intelligence-os-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fetch-data": "node scripts/fetch-and-score.mjs",
+    "serve": "python3 -m http.server 4173",
+    "demo": "npm run fetch-data && npm run serve",
+    "share:build": "bash scripts/build-share-site.sh",
+    "share:serve": "npm run share:build && python3 -m http.server 4174 --directory share-site",
+    "share": "npm run fetch-data && npm run share:build"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "dotenv": "^16.4.7"
+  }
+}

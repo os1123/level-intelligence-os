@@ -1,0 +1,1274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Level Intelligence OS — Detailed Proposition</title>
+<link rel="icon" href="data:," />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #11161d;
+    --ink-2: #2a323c;
+    --muted: #626d78;
+    --muted-2: #8a96a2;
+    --line: #d8dde3;
+    --line-2: #ebeef2;
+    --paper: #f6f7f4;
+    --paper-2: #efefe9;
+    --surface: #ffffff;
+    --green: #0d806c;
+    --green-2: #e2f2ee;
+    --green-3: #f6fbf9;
+    --gold: #bd8427;
+    --gold-2: #f5e9d2;
+    --blue: #4269d6;
+    --blue-2: #e2eaf6;
+    --risk: #b84a4a;
+    --risk-2: #f6dede;
+    --dark: #17202b;
+    --dark-2: #243040;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--green-2); }
+
+  /* ─── site nav (screen only) ──────────────────────────────────────────── */
+  .lx-sitenav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(246,247,244,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 24px;
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .lx-sitenav .brand {
+    display: inline-grid; place-items: center;
+    width: 30px; height: 30px;
+    border: 1.5px solid var(--ink);
+    font-weight: 900; font-size: 12px;
+  }
+  .lx-sitenav .title {
+    font-size: 13px; font-weight: 800;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .lx-sitenav .sub { color: var(--muted); font-size: 13px; font-weight: 500; }
+  .lx-sitenav .spacer { flex: 1; }
+  .lx-sitenav a {
+    color: var(--ink); text-decoration: none;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .lx-sitenav a:hover { border-color: var(--ink); }
+  .lx-sitenav a.current { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .lx-sitenav .download {
+    background: var(--green); color: #fff; border-color: var(--green);
+  }
+  .lx-sitenav .download:hover { background: #0a6b5a; border-color: #0a6b5a; }
+
+  /* ─── document layout ─────────────────────────────────────────────────── */
+  .doc {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 56px 96px;
+  }
+  .doc-narrow { max-width: 680px; margin: 0 auto; }
+
+  /* ─── typography ─────────────────────────────────────────────────────── */
+  .eyebrow {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin: 0 0 16px;
+  }
+  .eyebrow.green { color: var(--green); }
+  .eyebrow.gold  { color: var(--gold); }
+  .eyebrow.risk  { color: var(--risk); }
+
+  h1.cover-title {
+    font-family: Inter, system-ui, sans-serif;
+    font-size: clamp(56px, 7vw, 92px);
+    font-weight: 800;
+    letter-spacing: -0.028em;
+    line-height: 0.96;
+    margin: 0 0 28px;
+    color: var(--ink);
+  }
+  h1.cover-title .muted { color: var(--muted); }
+
+  h2 {
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.022em;
+    line-height: 1.15;
+    margin: 56px 0 18px;
+    color: var(--ink);
+    border-top: 1px solid var(--ink);
+    padding-top: 24px;
+  }
+  h2.no-rule { border-top: 0; padding-top: 0; }
+  h3 {
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.012em;
+    margin: 36px 0 8px;
+    color: var(--ink);
+  }
+  h4 {
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 24px 0 8px;
+  }
+  p { margin: 0 0 14px; }
+  p.lede {
+    font-size: 21px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin-bottom: 28px;
+  }
+  p.kicker {
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.45;
+    letter-spacing: -0.005em;
+  }
+  ul, ol { margin: 0 0 18px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--muted-2); }
+  strong { font-weight: 700; color: var(--ink); }
+  em { font-style: italic; color: var(--ink-2); }
+  blockquote {
+    margin: 28px 0;
+    padding: 18px 22px;
+    border-left: 3px solid var(--ink);
+    background: var(--paper-2);
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+  blockquote p { margin: 0; }
+  hr.sep {
+    border: 0; border-top: 1px solid var(--line);
+    margin: 36px 0;
+  }
+
+  /* ─── cover ──────────────────────────────────────────────────────────── */
+  .cover {
+    min-height: calc(100vh - 64px);
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding-bottom: 32px;
+  }
+  .cover-meta {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 32px;
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    margin-top: 56px;
+  }
+  .cover-meta div b {
+    display: block;
+    color: var(--ink);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    margin-bottom: 6px;
+  }
+
+  /* ─── TOC ────────────────────────────────────────────────────────────── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 26px 28px;
+    margin: 36px 0 48px;
+  }
+  .toc h4 {
+    margin: 0 0 14px;
+    border: 0; padding: 0;
+  }
+  .toc ol {
+    list-style: none; padding: 0; margin: 0;
+    counter-reset: toc;
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 14px;
+  }
+  .toc ol li {
+    counter-increment: toc;
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line-2);
+    align-items: baseline;
+  }
+  .toc ol li:last-child { border-bottom: 0; }
+  .toc ol li::before {
+    content: counter(toc, decimal-leading-zero);
+    color: var(--muted-2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .toc ol li a {
+    color: var(--ink); text-decoration: none; font-weight: 600;
+  }
+  .toc ol li a:hover { color: var(--green); }
+  .toc ol li .pg {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* ─── cards / tables ─────────────────────────────────────────────────── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin: 20px 0 24px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 18px 20px;
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .card .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted-2);
+  }
+  .card .v {
+    font-size: 30px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1;
+    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .card.green .v { color: var(--green); }
+  .card.gold  .v { color: var(--gold); }
+  .card.risk  .v { color: var(--risk); }
+  .card .x {
+    font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.4;
+  }
+
+  table.matrix {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 13.5px;
+  }
+  table.matrix th, table.matrix td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    line-height: 1.45;
+  }
+  table.matrix th {
+    font-size: 10.5px; font-weight: 800;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1.5px solid var(--ink);
+    background: var(--paper-2);
+  }
+  table.matrix tr:nth-child(even) td { background: var(--paper-2); }
+  table.matrix td b { color: var(--ink); }
+
+  /* ─── agent stack ────────────────────────────────────────────────────── */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0 28px;
+  }
+  .agent-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .agent-box .name {
+    font-size: 17px; font-weight: 800;
+    color: var(--ink); letter-spacing: -0.01em;
+  }
+  .agent-box .role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--green);
+    font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .agent-box .does {
+    font-size: 13.5px; color: var(--ink-2); line-height: 1.45;
+    margin-top: 10px;
+  }
+  .agent-box .replaces {
+    font-size: 12px; color: var(--muted); line-height: 1.4;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line-2);
+  }
+  .agent-box .replaces b {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted-2);
+    display: block; margin-bottom: 3px;
+  }
+
+  /* ─── compare strip ──────────────────────────────────────────────────── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin: 24px 0 32px;
+    border: 1px solid var(--ink);
+  }
+  .compare .col {
+    padding: 20px 22px;
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .compare .col.a { background: var(--paper-2); }
+  .compare .col.b { background: var(--ink); color: #fff; border-left: 1px solid var(--ink); }
+  .compare .col .h {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .compare .col.a .h { color: var(--muted); }
+  .compare .col.b .h { color: #6dd0b9; }
+  .compare .col .name {
+    font-size: 22px; font-weight: 800; letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+  .compare .col ul {
+    margin: 0; padding-left: 18px;
+    font-size: 13.5px; line-height: 1.5;
+  }
+  .compare .col.b ul li::marker { color: #6dd0b9; }
+  .compare .col li { margin-bottom: 4px; }
+
+  /* ─── callout ────────────────────────────────────────────────────────── */
+  .callout {
+    background: var(--green-3);
+    border-left: 4px solid var(--green);
+    padding: 22px 26px;
+    margin: 28px 0;
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .callout .h {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+  .callout p { margin: 0 0 8px; font-size: 15px; line-height: 1.5; color: var(--ink); }
+
+  /* ─── phase chips ────────────────────────────────────────────────────── */
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 20px 0 28px;
+  }
+  .phase {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .phase .wk {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--green);
+  }
+  .phase .n {
+    font-size: 16px; font-weight: 800; letter-spacing: -0.01em;
+    margin-top: 4px;
+  }
+  .phase .d {
+    font-size: 12.5px; color: var(--muted); line-height: 1.4;
+    margin-top: 8px;
+  }
+
+  /* ─── companion artifacts ────────────────────────────────────────────── */
+  .companions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 18px 0 0;
+  }
+  .companion {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 18px 20px;
+    text-decoration: none;
+    color: var(--ink);
+    font-family: Inter, system-ui, sans-serif;
+    display: block;
+  }
+  .companion:hover { border-color: var(--ink); }
+  .companion .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted-2);
+  }
+  .companion .t {
+    font-size: 18px; font-weight: 800; letter-spacing: -0.01em;
+    margin: 6px 0 6px;
+  }
+  .companion .s {
+    font-size: 13px; color: var(--muted); line-height: 1.4;
+  }
+
+  /* ─── close / footer ─────────────────────────────────────────────────── */
+  .doc-footer {
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    display: flex; gap: 18px;
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 12px; color: var(--muted-2);
+    letter-spacing: 0.06em;
+  }
+  .doc-footer .spacer { flex: 1; }
+
+  /* ─── print ──────────────────────────────────────────────────────────── */
+  @page {
+    size: Letter;
+    margin: 0.6in 0.7in 0.75in 0.7in;
+    @bottom-left {
+      content: "Level Intelligence OS · Detailed Proposition";
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: #8a96a2;
+      letter-spacing: 0.08em;
+    }
+    @bottom-right {
+      content: counter(page) " / " counter(pages);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: #8a96a2;
+      letter-spacing: 0.08em;
+    }
+  }
+  @media print {
+    html, body { background: #fff; }
+    .lx-sitenav, .doc-footer { display: none !important; }
+    .doc { max-width: none; padding: 0; }
+    .doc-narrow { max-width: none; }
+    .cover { min-height: auto; page-break-after: always; }
+    h2 { page-break-before: auto; page-break-after: avoid; }
+    h3 { page-break-after: avoid; }
+    .agent-grid, .cards, .phases, .compare, .toc, .companions, .callout, table.matrix, blockquote { page-break-inside: avoid; }
+    h1.cover-title { font-size: 64px; }
+    a { color: var(--ink); text-decoration: none; }
+    .toc ol li a { color: var(--ink); }
+    .companion { break-inside: avoid; }
+    /* tighter print scale */
+    body { font-size: 11pt; line-height: 1.5; }
+    p.lede { font-size: 13pt; }
+    h2 { font-size: 20pt; margin-top: 28px; padding-top: 16px; }
+    h3 { font-size: 13pt; }
+    p { margin-bottom: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="lx-sitenav">
+  <span class="brand">LX</span>
+  <span class="title">Level Intelligence OS</span>
+  <span class="sub">· Detailed Proposition</span>
+  <span class="spacer"></span>
+  <a href="/">Two Paths</a>
+  <a href="/agent-ops">Agent Ops</a>
+  <a href="/proposition" class="current">Proposition</a>
+  <a href="/level-intelligence-os-detailed-proposition.pdf" class="download" download>Download PDF ↓</a>
+</nav>
+
+<main class="doc">
+
+  <!-- ─── COVER ──────────────────────────────────────────────────────── -->
+  <section class="cover">
+    <div>
+      <p class="eyebrow green">Detailed Proposition · Client-ready draft</p>
+      <h1 class="cover-title">
+        A private intelligence layer<br/>
+        <span class="muted">built around Level's operating context.</span>
+      </h1>
+      <p class="lede" style="max-width: 60ch; margin-top: 28px;">
+        Level Intelligence OS is a Level-specific construction intelligence and pursuit
+        system. It finds project signals earlier, qualifies them against Level's own
+        operating criteria, routes work to the right person, coordinates RFQs and go/no-go
+        decisions, preserves relationship memory, and gives leadership a weekly view of what
+        matters — all on top of an owned operating context that compounds every time the
+        team makes a call.
+      </p>
+    </div>
+
+    <div class="cover-meta">
+      <div><b>Prepared for</b>Level Construction · Founders + BD + Precon + Capital</div>
+      <div><b>Prepared by</b>Omar Sayed · Grounded</div>
+      <div><b>Document</b>Detailed Proposition · v2026.05</div>
+      <div><b>Companions</b>Two Paths walkthrough · Agent Ops live demo</div>
+      <div><b>Status</b>Client-ready draft · for working review</div>
+      <div><b>Confidentiality</b>Shared in confidence with Level Construction</div>
+    </div>
+  </section>
+
+  <!-- ─── TOC ─────────────────────────────────────────────────────────── -->
+  <section>
+    <div class="toc">
+      <h4>Contents</h4>
+      <ol>
+        <li><a href="#summary">Executive summary</a><span class="pg">§ 1</span></li>
+        <li><a href="#context">The context advantage — and why nothing on the market does this for Level</a><span class="pg">§ 2</span></li>
+        <li><a href="#mercator">Where Mercator fits, and where Level Intelligence OS goes further</a><span class="pg">§ 3</span></li>
+        <li><a href="#agents">The agentic stack — six specialists that change the workflow game</a><span class="pg">§ 4</span></li>
+        <li><a href="#roi">ROI — eight compounding value levers</a><span class="pg">§ 5</span></li>
+        <li><a href="#procore">Procore bridge strategy — wrap first, replace only when earned</a><span class="pg">§ 6</span></li>
+        <li><a href="#control">Human control and trust</a><span class="pg">§ 7</span></li>
+        <li><a href="#pilot">The 90-day pilot</a><span class="pg">§ 8</span></li>
+        <li><a href="#commercial">Commercial principles and ownership</a><span class="pg">§ 9</span></li>
+        <li><a href="#discovery">Discovery questions</a><span class="pg">§ 10</span></li>
+        <li><a href="#close">Closing position</a><span class="pg">§ 11</span></li>
+        <li><a href="#companions">Companion artifacts</a><span class="pg">§ 12</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ─── 1. EXECUTIVE SUMMARY ──────────────────────────────────────── -->
+  <section id="summary" class="doc-narrow">
+    <h2 class="no-rule">1 · Executive summary</h2>
+    <p class="lede">
+      Level already has the hard part: trusted relationships, commercial construction
+      judgment, development instincts, hospitality experience, capital discipline, and a
+      practical sense for which opportunities are worth time. The opportunity is to turn
+      that judgment into a private operating system that Level owns.
+    </p>
+    <p>
+      <strong>The thesis is simple.</strong> Generic SaaS makes Level adapt to vendor screens.
+      Level Intelligence OS does the inverse: the software adapts to Level's language,
+      relationships, criteria, approvals, capital posture, and operating rhythm. Every signal
+      the team processes, every memo the agents draft, every decision Levin approves or
+      passes on, gets recorded in an owned context layer. The system gets sharper every
+      week — and that compounding context is the asset.
+    </p>
+    <p>
+      <strong>Three layers create the value.</strong>
+    </p>
+    <ul>
+      <li><strong>An owned context layer</strong> — Level's accounts, contacts, sites, permits, RFQs, bids, prior decisions, outcomes, and relationship memory, structured so software can actually use them.</li>
+      <li><strong>An agentic workflow layer</strong> — six specialist agents (Scout, Permit, Memory, Qualifier, Bid, Brief) that detect signals, pull context, score against Level's criteria, draft memos, and queue decisions for the right human.</li>
+      <li><strong>An executive operating rhythm</strong> — a weekly brief built from live system state, not chased status updates. Exception-first. Decision-ready.</li>
+    </ul>
+    <blockquote>
+      <p>
+        Level should not rent generic intelligence when it can build the operating memory
+        that makes its own team sharper.
+      </p>
+    </blockquote>
+    <p>
+      The recommended first step is a focused <strong>90-day pilot</strong>: consolidate
+      active opportunities, accounts, contacts, and RFQs into the context layer; ship
+      Level-specific qualification scoring; stand up the RFQ and go/no-go command center;
+      route approvals and next actions; and produce the first weekly executive intelligence
+      brief from live data. The near-term outcome is cleaner visibility and faster decisions.
+      The long-term outcome is a proprietary operating memory that improves every time
+      Level reviews a signal, pursues an opportunity, wins a job, passes on a poor-fit
+      project, or learns from execution.
+    </p>
+  </section>
+
+  <!-- ─── 2. THE CONTEXT ADVANTAGE ──────────────────────────────────── -->
+  <section id="context" class="doc-narrow">
+    <h2>2 · The context advantage</h2>
+    <p class="eyebrow">Why nothing on the market does this for Level</p>
+    <p class="lede">
+      Every meaningful construction firm sits on a quiet asset: the cumulative judgment of
+      its operators. For Level, that's the memory of who Carter is, why the Plano HGI bid
+      won, what made the Frisco TI margin survive a tight schedule, which jurisdictions
+      bleed weeks in plan review, and which brand operators are easy to bid against. That
+      asset lives — today — in inboxes, spreadsheets, threads, RFQ folders, and people's
+      heads.
+    </p>
+    <p>
+      Software can't use any of it. Search doesn't find it. New hires don't inherit it.
+      Generic CRMs and project tools store records but not the relationships <em>between</em>
+      records. That's the gap that limits everything else: when a permit lands or a broker
+      forwards a tip, Level's team can't ask <em>"what's our history with this owner, what
+      similar pursuit did we win, which jurisdiction will slow this down, and who on our
+      side should own the next move?"</em> — at least not in seconds, with structured
+      context attached.
+    </p>
+
+    <h3>What "context" means here</h3>
+    <p>
+      The Level Intelligence OS context layer is not a CRM, not a data lake, and not a
+      document store. It's an <strong>operating-grade graph of Level's business</strong>:
+      accounts, contacts, sites, parcels, markets, jurisdictions, permits, RFQs, bids,
+      projects, vendors, capital sources, signals, decisions, approvals, and outcomes — all
+      linked, all timestamped, all auditable.
+    </p>
+    <p>
+      That graph turns ten years of operating judgment into something an agent can query
+      and a leader can see. Three properties make it valuable:
+    </p>
+    <div class="cards">
+      <div class="card green">
+        <div class="k">Owned</div>
+        <div class="v">100%</div>
+        <div class="x">Level's data, schema, and workflows — exportable, no vendor lock-in.</div>
+      </div>
+      <div class="card">
+        <div class="k">Compounding</div>
+        <div class="v">↑ wk</div>
+        <div class="x">Every signal, score, override, and outcome makes the next decision sharper.</div>
+      </div>
+      <div class="card">
+        <div class="k">Queryable</div>
+        <div class="v">∞</div>
+        <div class="x">Natural-language access — Levin asks, the system answers from live records.</div>
+      </div>
+    </div>
+
+    <h3>The questions Level can finally answer</h3>
+    <p>The context layer makes operating questions answerable on demand:</p>
+    <ul>
+      <li>"Show me Houston restaurant opportunities with strong relationship fit."</li>
+      <li>"Which RFQs are due in the next 10 days and which are still missing documents?"</li>
+      <li>"Summarize our history with this owner before the call at 3."</li>
+      <li>"Which jurisdictions delayed us most often, and by how many days?"</li>
+      <li>"Which opportunities should we pass on and why?"</li>
+      <li>"What did we learn from lost bids this quarter?"</li>
+      <li>"What changed since last week's executive brief?"</li>
+    </ul>
+    <p>
+      Today every one of those questions costs hours, three Slack threads, and a meeting.
+      With the context layer in place, each is one query — answered with sourcing, scoring,
+      and the relevant prior pursuit attached.
+    </p>
+
+    <div class="callout">
+      <div class="h">The asset</div>
+      <p>
+        Level's operating judgment is the asset. The context layer is the form that makes
+        it usable, defensible, and durable — not stored in any one person's head, not held
+        hostage by any one vendor, not erased when a key relationship leaves.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── 3. MERCATOR ───────────────────────────────────────────────── -->
+  <section id="mercator" class="doc-narrow">
+    <h2>3 · Where Mercator fits — and where Level Intelligence OS goes further</h2>
+    <p class="lede">
+      Mercator is a useful category reference. It proves construction firms benefit from
+      early project intelligence — surfaced permits, planning movement, ownership shifts,
+      development signals. That category is real, and a Level Intelligence OS deployment
+      brings that capability natively. But Mercator stops at the signal. Level needs the
+      operating layer that takes a signal and turns it into a qualified, owned, routed,
+      and converted pursuit.
+    </p>
+
+    <div class="compare">
+      <div class="col a">
+        <div class="h">Category reference</div>
+        <div class="name">Mercator-class intelligence</div>
+        <ul>
+          <li>Surfaces public project signals (permits, planning, ownership).</li>
+          <li>Generic feed with broad market coverage.</li>
+          <li>Read-only — a data product Level subscribes to.</li>
+          <li>No Level-specific qualification, no relationship memory.</li>
+          <li>No RFQ workflow, no go/no-go, no approval queue.</li>
+          <li>No executive operating rhythm tied to Level's calendar.</li>
+        </ul>
+      </div>
+      <div class="col b">
+        <div class="h">Level Intelligence OS</div>
+        <div class="name">Owned operating layer</div>
+        <ul>
+          <li>Brings the early-signal capability natively, scoped to Level's markets.</li>
+          <li>Plus Level-specific qualification against your own criteria and history.</li>
+          <li>Plus relationship memory — every account, contact, prior pursuit.</li>
+          <li>Plus the RFQ and go/no-go command center on top of those signals.</li>
+          <li>Plus the approval queue, audit trail, and executive brief.</li>
+          <li>Plus the compounding context layer — owned and proprietary.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="kicker">
+      We bring what Mercator does. We then keep going — qualifying, routing, briefing,
+      approving, and remembering — inside one system that Level owns.
+    </p>
+    <p>
+      The point is not a feature-by-feature replacement. The point is positioning:
+      Mercator-class intelligence is the <em>input</em> layer. The operating value lives in
+      what happens next — and the firm that owns the operating layer keeps the upside.
+      When a permit surfaces, the right outcome isn't a notification, it's a scored memo
+      with relationship history, comparable prior pursuit, and an owner pre-assigned —
+      ready for Levin to approve before the morning meeting.
+    </p>
+
+    <h3>Other use cases beyond signals</h3>
+    <p>
+      Because the context layer is general-purpose, the same operating system handles
+      workflows Mercator-class tools never touch:
+    </p>
+    <ul>
+      <li><strong>RFQ triage and go/no-go memos</strong> — 128-page packages summarized, requirements extracted, missing documents flagged, comparable bids surfaced, memo drafted, approver queued.</li>
+      <li><strong>Permit and entitlement monitoring</strong> — plan review queues watched across jurisdictions, comments parsed, response drafted, days-in-review compared to historical cycle time.</li>
+      <li><strong>Relationship memory and warm-intro mapping</strong> — when a broker forwards a Schaumburg lead, the system surfaces D. Tan (Carter, ex-AC Hotels, 2-hop, last touch 38d) as the warm intro path.</li>
+      <li><strong>Weekly executive brief</strong> — Monday morning, the system polls every agent, assembles changes, stucks, and decisions, and pushes a decision-ready brief instead of a status meeting.</li>
+      <li><strong>Capital and finance context</strong> — opportunity intelligence linked to financing milestones, draw events, and investor reporting where relevant.</li>
+      <li><strong>Software rationalization</strong> — evidence on which of Level's current tools are earning their seat versus creating friction.</li>
+    </ul>
+  </section>
+
+  <!-- ─── 4. AGENTIC STACK ──────────────────────────────────────────── -->
+  <section id="agents" class="doc-narrow">
+    <h2>4 · The agentic stack</h2>
+    <p class="eyebrow">Six specialists that completely change the workflow game</p>
+    <p class="lede">
+      Each agent is a specialist operator with a narrow job, bounded tools, defined inputs,
+      and explicit authority. None of them are vague general assistants. Together they
+      collapse the loop from <em>signal arrives</em> to <em>decision queued</em> from
+      <strong>weeks</strong> to <strong>a single morning</strong> — without removing human
+      judgment from anything that matters.
+    </p>
+
+    <div class="agent-grid">
+      <div class="agent-box">
+        <div class="name">Scout</div>
+        <div class="role">Signal · detect</div>
+        <div class="does">
+          Watches permits, planning agendas, ownership filings, broker tips, RFQs.
+          Extracts entities. Dedupes against the pipeline. Classifies asset type, market,
+          jurisdiction. Routes to the right downstream agent.
+        </div>
+        <div class="replaces"><b>Replaces today</b>
+          BD inbox triage, Sara forwarding "can you look at this?", three Slack threads
+          asking if anyone's seen the filing.
+        </div>
+      </div>
+      <div class="agent-box">
+        <div class="name">Permit</div>
+        <div class="role">Jurisdiction · monitor</div>
+        <div class="does">
+          Watches plan review queues across every jurisdiction Level operates in.
+          Parses plan review comments. Tracks days in review against historical cycle time.
+          Flags blockers that affect pursuit or schedule assumptions.
+        </div>
+        <div class="replaces"><b>Replaces today</b>
+          The PM checking portals weekly, the moment a Friday email surfaces a comment
+          that's been open for nine days.
+        </div>
+      </div>
+      <div class="agent-box">
+        <div class="name">Memory</div>
+        <div class="role">Relationships · context</div>
+        <div class="does">
+          Indexes accounts, contacts, prior pursuits. Pulls relationship strength, last
+          touch, win/loss history, warm-intro paths. Generates the briefing one minute
+          before Levin walks into a call.
+        </div>
+        <div class="replaces"><b>Replaces today</b>
+          Texting the team asking "what do we know about Carter?", scrolling through three
+          years of email looking for the last touch.
+        </div>
+      </div>
+      <div class="agent-box">
+        <div class="name">Qualifier</div>
+        <div class="role">Score · Level criteria</div>
+        <div class="does">
+          Scores every opportunity against Level's ten qualification dimensions — geography,
+          asset, relationship, margin, capacity, strategic value. Recommends pursue / watch
+          / pass. Identifies the missing information that would lift confidence.
+        </div>
+        <div class="replaces"><b>Replaces today</b>
+          The conflicting numbers Sara and Mark gave last week, the inconsistent pursuit
+          criteria across the team, the lost-bid post-mortems with no comparable lookup.
+        </div>
+      </div>
+      <div class="agent-box">
+        <div class="name">Bid</div>
+        <div class="role">RFQ · go/no-go</div>
+        <div class="does">
+          Ingests RFQ packages (the 128-page hospitality ones included). Extracts scope,
+          deadlines, submission format, insurance, bonding, missing documents. Drafts the
+          go/no-go memo. Compares to prior bids. Flags schedule and FF&amp;E risk.
+        </div>
+        <div class="replaces"><b>Replaces today</b>
+          Two days of someone reading the package, the late-night realization the ESA was
+          never in the bundle, the bid submitted with one risk we forgot to price.
+        </div>
+      </div>
+      <div class="agent-box">
+        <div class="name">Brief</div>
+        <div class="role">Executive · assemble</div>
+        <div class="does">
+          Polls every agent every Monday at 7:00 AM. Assembles changes, stucks, and
+          decisions into one exception-first executive brief. Pushes it to founders, BD,
+          precon, ops, and capital. The status meeting is now a 6-minute read.
+        </div>
+        <div class="replaces"><b>Replaces today</b>
+          The Monday status meeting, the chase emails the Friday before, the half-fresh
+          board update that's stale by the time it lands.
+        </div>
+      </div>
+    </div>
+
+    <h3>How they actually work together</h3>
+    <p>
+      A new permit lands for Cedar Park HGI at 09:14. Inside the next six minutes:
+    </p>
+    <ul>
+      <li><strong>09:14</strong> · Permit parses the filing — Travis County, 120-key, applicant Carter.</li>
+      <li><strong>09:15</strong> · Scout dedupes against the pipeline and classifies hospitality / new-build.</li>
+      <li><strong>09:15</strong> · Memory pulls Carter — strength 0.78, 3 prior bids, 2 wins, last touch 14 days.</li>
+      <li><strong>09:16</strong> · Qualifier scores 0.84 with Plano HGI as comparable (won at 0.81).</li>
+      <li><strong>09:18</strong> · Bid drafts the pursuit memo with two open questions for Carter.</li>
+      <li><strong>09:20</strong> · Approval queued for M. Levin · move to pursue.</li>
+    </ul>
+    <p>
+      On the traditional path, the same signal sits in an inbox for three days, gets forwarded
+      on day five, sits with stale CRM data on day nine, accumulates conflicting numbers by
+      day sixteen, hits an OOO loop by day twenty-three, and dies on day thirty-one when the
+      RFQ deadline passes. That contrast is the <em>workflow game change</em> — and the
+      walkthrough at <a href="/">/two-paths</a> animates it scroll-by-scroll. The agent
+      ops console at <a href="/agent-ops">/agent-ops</a> lets you trigger the same
+      scenarios live.
+    </p>
+  </section>
+
+  <!-- ─── 5. ROI ────────────────────────────────────────────────────── -->
+  <section id="roi" class="doc-narrow">
+    <h2>5 · ROI — eight compounding value levers</h2>
+    <p class="lede">
+      The strongest ROI argument isn't labor savings, though those are real. It's that
+      Level's <strong>owned operating context</strong> compounds — every signal, every
+      score, every override, every outcome makes the next decision sharper. Most software
+      depreciates after install. This appreciates.
+    </p>
+    <p>
+      Eight levers create measurable value. The first four show up inside 90 days. The
+      remaining four compound over the first 12-24 months.
+    </p>
+
+    <h3>Near-term levers (Q1 of operation)</h3>
+    <table class="matrix">
+      <thead>
+        <tr><th style="width: 24%;">Lever</th><th>Mechanism</th><th style="width: 22%;">How it's measured</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Opportunity capture</b></td>
+          <td>Signals detected from permits, planning, ownership, broker tips, and franchise news — converted into structured opportunity records with score, owner, and next action.</td>
+          <td>Signals captured / week · % converted to opportunity · win rate by source</td>
+        </tr>
+        <tr>
+          <td><b>Pursuit discipline</b></td>
+          <td>Every opportunity scored against Level's criteria and compared to historical pursuits. Faster, more consistent go/no-go decisions. Fewer low-margin distractions.</td>
+          <td>Time to go/no-go · % with complete score · win rate by score band</td>
+        </tr>
+        <tr>
+          <td><b>Administrative load reduction</b></td>
+          <td>Agents handle first-pass cognitive work — summarizing, extracting, classifying, comparing, drafting, routing, reminding. Status meetings shrink to exceptions.</td>
+          <td>Hours saved per RFQ · hours saved per weekly brief · reduction in overdue tasks</td>
+        </tr>
+        <tr>
+          <td><b>RFQ and bid quality</b></td>
+          <td>RFQ packages parsed in minutes, missing documents flagged, comparable prior bids surfaced, go/no-go memo drafted. Level bids fewer, but bids better.</td>
+          <td>RFQs processed · avg review time · % with memo · win rate by RFQ type</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Compounding levers (12-24 months)</h3>
+    <table class="matrix">
+      <thead>
+        <tr><th style="width: 24%;">Lever</th><th>Mechanism</th><th style="width: 22%;">How it's measured</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Permit / entitlement risk reduction</b></td>
+          <td>Permits monitored across jurisdictions. Comments parsed, responses drafted, blockers flagged. Earlier detection of delays, faster response, jurisdiction memory grows.</td>
+          <td>Avg days in review · % past expected cycle · time from comment to response</td>
+        </tr>
+        <tr>
+          <td><b>Relationship memory</b></td>
+          <td>Account timelines, contact histories, last touch, next touch, warm intros. Relationship knowledge no longer trapped in one person's head — durable across team changes.</td>
+          <td>Stale relationship count · follow-up completion · opportunities sourced by relationship</td>
+        </tr>
+        <tr>
+          <td><b>Executive focus</b></td>
+          <td>Weekly brief assembled from live data. Pending decisions surfaced. Stalled opportunities and risks flagged. Leadership time shifts from status gathering to judgment.</td>
+          <td>Pending decisions by age · stalled opportunity count · brief usage / adoption</td>
+        </tr>
+        <tr>
+          <td><b>Enterprise data asset</b></td>
+          <td>Every signal, score, decision, relationship, RFQ, bid, permit, vendor outcome, win/loss, and margin result becomes structured memory. Proprietary, exportable, defensible.</td>
+          <td>Structured record count · recommendation accuracy · outcomes tied back to prior decisions</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="h">Three scenario shapes (to be populated in discovery)</div>
+      <p>
+        <strong>Scenario A — Operational efficiency only.</strong> Value comes from
+        administrative time savings, fewer missed deadlines, fewer status meetings, faster
+        RFQ triage, faster permit follow-up. Justifies the pilot on its own.
+      </p>
+      <p>
+        <strong>Scenario B — One better opportunity.</strong> Value comes from identifying,
+        qualifying, or winning one additional meaningful project per year that would
+        otherwise have been missed or pursued too late. Typically dwarfs Scenario A by an
+        order of magnitude.
+      </p>
+      <p>
+        <strong>Scenario C — Enterprise operating asset.</strong> Value comes from the
+        system improving the quality and consistency of Level's decisions over time —
+        better scoring, reusable memory, onboarding leverage, owned software optionality.
+        This is the durable enterprise-value lever.
+      </p>
+    </div>
+
+    <h3>What we recommend Level <em>not</em> claim</h3>
+    <p>
+      Don't sell the pilot on labor savings alone. Labor savings are real and easy to
+      measure, but they undersell the asset. The larger value — and the more honest one —
+      is <strong>better opportunities, better decisions, less leakage, institutional
+      memory, faster adaptation, and enterprise maturity</strong>. That's what the context
+      layer is for.
+    </p>
+  </section>
+
+  <!-- ─── 6. PROCORE BRIDGE ─────────────────────────────────────────── -->
+  <section id="procore" class="doc-narrow">
+    <h2>6 · Procore bridge strategy</h2>
+    <p class="eyebrow">Wrap first. Earn the right to replace.</p>
+    <p class="lede">
+      Procore is a strong source of truth for active project execution. The first job is
+      to structure Level Intelligence OS <em>around</em> that reality — adding the
+      intelligence and executive layer Procore is not designed to be — rather than forcing
+      a disruptive migration.
+    </p>
+    <table class="matrix">
+      <thead>
+        <tr><th style="width: 22%;">Phase</th><th>Position</th><th style="width: 26%;">Outcome</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>1 · Read and reference</b></td>
+          <td>Treat Procore as the current execution source of truth. Pull or reference only the data needed for visibility and decisions.</td>
+          <td>Zero disruption to field or project teams.</td>
+        </tr>
+        <tr>
+          <td><b>2 · Workflow overlay</b></td>
+          <td>Use Level Intelligence OS for signals, RFQs, go/no-go memos, relationship memory, approvals, and executive briefs.</td>
+          <td>Operating rhythm improves without a platform migration.</td>
+        </tr>
+        <tr>
+          <td><b>3 · Evidence-based rationalization</b></td>
+          <td>Measure which workflows are better handled inside Level's owned system and which should stay in Procore.</td>
+          <td>Software decisions based on observed value, not vendor narratives.</td>
+        </tr>
+        <tr>
+          <td><b>4 · Selective replacement</b></td>
+          <td>Move modules away from monolithic software only when the owned layer is clearly better, safer, and cheaper.</td>
+          <td>Dependency reduces over time without risky rip-and-replace.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="kicker">The operating principle: <em>earn the right to replace</em>.</p>
+  </section>
+
+  <!-- ─── 7. CONTROL ────────────────────────────────────────────────── -->
+  <section id="control" class="doc-narrow">
+    <h2>7 · Human control and trust</h2>
+    <p class="lede">
+      The system prepares work. It does not silently make consequential decisions.
+      Authority is explicit, audit trails are required, and Level controls the final move
+      on anything that touches the outside world or commits resources.
+    </p>
+    <table class="matrix">
+      <thead>
+        <tr><th>Authority level</th><th>System can do</th><th>Human control</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Autonomous</b></td>
+          <td>Classify signals, summarize RFQs, dedupe contacts, draft briefs, extract requirements.</td>
+          <td>Logged for review.</td>
+        </tr>
+        <tr>
+          <td><b>Suggest</b></td>
+          <td>Recommend owner, next action, pursue/watch/pass, follow-up draft.</td>
+          <td>Human accepts, edits, or overrides.</td>
+        </tr>
+        <tr>
+          <td><b>Approval required</b></td>
+          <td>External outreach, bid submission, vendor award, budget change, investor communication.</td>
+          <td>Explicit approval required before execution.</td>
+        </tr>
+        <tr>
+          <td><b>Manual</b></td>
+          <td>Legal, contract, financing, final strategic decisions.</td>
+          <td>Human executes; agents assist.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Every meaningful recommendation carries: what the system recommends, why, the
+      evidence it used, what's missing, its confidence, the approver, the decision, and
+      eventually the outcome. That audit trail is what lets the system learn from
+      leadership overrides instead of repeating them.
+    </p>
+  </section>
+
+  <!-- ─── 8. PILOT ──────────────────────────────────────────────────── -->
+  <section id="pilot" class="doc-narrow">
+    <h2>8 · The 90-day pilot</h2>
+    <p class="eyebrow">Design, build, test, operationalize</p>
+
+    <h3>Objective</h3>
+    <p>
+      Prove that Level Intelligence OS can improve opportunity visibility, qualification
+      discipline, RFQ coordination, executive reporting, and institutional memory within
+      90 days — and produce a phase-two roadmap that's grounded in evidence rather than
+      assumption.
+    </p>
+
+    <h3>Scope (v1)</h3>
+    <ul>
+      <li>Active opportunity pipeline.</li>
+      <li>Account and contact relationship layer.</li>
+      <li>Signal inbox (Scout + Permit feeding the context layer).</li>
+      <li>Level-specific qualification scoring.</li>
+      <li>RFQ intake and go/no-go memo workflow.</li>
+      <li>Approval and next-action queue.</li>
+      <li>Weekly executive brief, generated from live system data.</li>
+      <li>Outcome capture and feedback loop.</li>
+    </ul>
+
+    <h3>Timeline</h3>
+    <div class="phases">
+      <div class="phase">
+        <div class="wk">Weeks 1-2</div>
+        <div class="n">Foundation</div>
+        <div class="d">Data model, roles, active opportunities, account/contact views, executive dashboard skeleton.</div>
+      </div>
+      <div class="phase">
+        <div class="wk">Weeks 3-5</div>
+        <div class="n">Intelligence</div>
+        <div class="d">Signal inbox, opportunity summaries, qualification score, relationship briefs, first weekly digest.</div>
+      </div>
+      <div class="phase">
+        <div class="wk">Weeks 6-8</div>
+        <div class="n">Workflow</div>
+        <div class="d">RFQ command center, deadline extraction, go/no-go memo, approval queue, bid task tracking.</div>
+      </div>
+      <div class="phase">
+        <div class="wk">Weeks 9-12</div>
+        <div class="n">Operating rhythm</div>
+        <div class="d">Weekly executive brief, outcome tracking, adoption review, phase-two roadmap.</div>
+      </div>
+    </div>
+
+    <h3>Success metrics</h3>
+    <p>
+      Pilot success is measured by operating usefulness, not novelty:
+    </p>
+    <ul>
+      <li>100% of active pursuits visible in the system, each with owner, stage, source, score, next action, and age.</li>
+      <li>At least 10 useful signals captured, reviewed, and routed during the pilot.</li>
+      <li>RFQs tracked with deadlines, requirements, missing-document flags, and go/no-go status.</li>
+      <li>Weekly executive brief generated from live system data, used in the leadership cadence.</li>
+      <li>Leadership identifies faster decisions, fewer blind spots, or clearer accountability than before the pilot.</li>
+      <li>Phase-two roadmap approved, adjusted, or rejected based on evidence collected during the pilot.</li>
+    </ul>
+
+    <h3>Phase-two options</h3>
+    <p>Expansion is sequenced based on where Level sees the highest value during the pilot:</p>
+    <ul>
+      <li>Permit and entitlement monitoring at jurisdiction depth.</li>
+      <li>Email, calendar, and CRM integration into the context layer.</li>
+      <li>Procore read-only bridge.</li>
+      <li>Vendor and subcontractor performance memory.</li>
+      <li>Project handoff from pursuit to execution.</li>
+      <li>Finance and capital workflow.</li>
+      <li>Investor reporting support.</li>
+      <li>Hospitality pipeline tracking.</li>
+      <li>Software rationalization and existing-tool usage audit.</li>
+    </ul>
+  </section>
+
+  <!-- ─── 9. COMMERCIAL ─────────────────────────────────────────────── -->
+  <section id="commercial" class="doc-narrow">
+    <h2>9 · Commercial principles and ownership</h2>
+    <p>
+      The final commercial structure will be defined after discovery. The operating
+      principles, however, should be clear up front.
+    </p>
+
+    <h3>Engagement</h3>
+    <p>90-day pilot to design, build, test, and operationalize Level Intelligence OS v1.</p>
+
+    <h3>Pilot deliverables</h3>
+    <ul>
+      <li>Level data model and workflow map.</li>
+      <li>Active opportunity / account / contact database.</li>
+      <li>Signal inbox and triage workflow.</li>
+      <li>Qualification scoring framework.</li>
+      <li>RFQ intake and go/no-go memo workflow.</li>
+      <li>Approval queue.</li>
+      <li>Weekly executive brief.</li>
+      <li>Pilot success report and phase-two roadmap.</li>
+    </ul>
+
+    <h3>Ownership</h3>
+    <ul>
+      <li><strong>Level owns its data</strong>, operating memory, domain model, and workflow definitions.</li>
+      <li>Level retains export rights for pilot data and generated records.</li>
+      <li>Code ownership and licensing defined in the final agreement.</li>
+      <li>AI model providers remain replaceable infrastructure — not a lock-in surface.</li>
+      <li>The strategic asset is Level's operating judgment, made structured and reusable.</li>
+    </ul>
+
+    <h3>Data and confidentiality</h3>
+    <ul>
+      <li>Level data is confidential.</li>
+      <li>Role-based access and audit logs required.</li>
+      <li>No external reuse of Level data without written permission.</li>
+      <li>Sensitive actions require human approval.</li>
+      <li>Data export available at all times.</li>
+    </ul>
+  </section>
+
+  <!-- ─── 10. DISCOVERY ────────────────────────────────────────────── -->
+  <section id="discovery" class="doc-narrow">
+    <h2>10 · Discovery questions</h2>
+    <p class="lede">
+      A short, workflow-grounded discovery sharpens the pilot. The questions below are the
+      ones we'd work through in the first two weeks — not abstract AI strategy questions,
+      but the practical anchors that determine where Level Intelligence OS sits inside
+      Level's actual operating rhythm.
+    </p>
+    <ul>
+      <li>Where do new opportunities originate today — and which sources matter most?</li>
+      <li>Who owns opportunity qualification, and where do go/no-go decisions get made?</li>
+      <li>What makes a Level opportunity attractive or unattractive — by asset, market, owner, capacity?</li>
+      <li>Where do RFQs live today, and how is the package read, scoped, and decided?</li>
+      <li>What fields does leadership need to see every week — and which ones are stale today?</li>
+      <li>Which relationships, markets, and asset types matter most over the next 12 months?</li>
+      <li>Which systems are in use today — Procore, CRM, email, calendar, accounting, storage?</li>
+      <li>Which Procore modules are true sources of truth, and which are mainly used for visibility?</li>
+      <li>What data can be imported safely for the pilot?</li>
+      <li>Which actions require explicit approval, and from whom?</li>
+      <li>What would make the pilot obviously worth continuing into phase two?</li>
+    </ul>
+  </section>
+
+  <!-- ─── 11. CLOSING ──────────────────────────────────────────────── -->
+  <section id="close" class="doc-narrow">
+    <h2>11 · Closing position</h2>
+    <p class="lede">
+      Level Intelligence OS should be read as a serious operating asset, not an AI
+      experiment. The first version gives Level one place to see opportunities, understand
+      fit, track RFQs, preserve relationship memory, and route decisions. The long-term
+      version becomes Level's private construction intelligence layer — a system that
+      learns from Level's signals, relationships, decisions, wins, losses, and operating
+      judgment, and gets sharper every quarter.
+    </p>
+    <blockquote>
+      <p>
+        Mercator finds opportunities. Level Intelligence OS finds, qualifies, routes, and
+        converts opportunities using Level's own operating judgment — on top of an owned
+        context layer that compounds. The first is a feed Level subscribes to. The second
+        is an asset Level owns.
+      </p>
+    </blockquote>
+    <p>
+      The recommended next step is a 90-day pilot, scoped tightly enough to ship and
+      operationalize inside one quarter, generous enough to prove the compounding loop
+      with real Level data. From there, phase two is decided from evidence, not
+      assumption.
+    </p>
+  </section>
+
+  <!-- ─── 12. COMPANIONS ───────────────────────────────────────────── -->
+  <section id="companions" class="doc-narrow">
+    <h2>12 · Companion artifacts</h2>
+    <p>
+      This document is one of three artifacts in the Level Intelligence OS package. The
+      walkthrough animations make the operating model visible. Use them together.
+    </p>
+    <div class="companions">
+      <a class="companion" href="/">
+        <div class="lbl">Animation · scroll site</div>
+        <div class="t">Two Paths</div>
+        <div class="s">Same morning, two paths. A scroll-driven walkthrough of the 31-days-vs-six-minutes contrast across the full pipeline.</div>
+      </a>
+      <a class="companion" href="/agent-ops">
+        <div class="lbl">Live console</div>
+        <div class="t">Agent Ops</div>
+        <div class="s">A live demo of the agent network. Trigger four scenarios — permit, RFQ, broker tip, weekly brief — and watch the agents work in parallel.</div>
+      </a>
+    </div>
+    <p style="margin-top: 28px; font-size: 14px; color: var(--muted);">
+      A PDF of this proposition is available via the
+      <a href="/level-intelligence-os-detailed-proposition.pdf" style="color: var(--green); font-weight: 600;">download link in the header</a>
+      — share it with stakeholders who'd rather read offline.
+    </p>
+  </section>
+
+  <footer class="doc-footer">
+    <div>Level Intelligence OS · Detailed Proposition · v2026.05</div>
+    <div class="spacer"></div>
+    <div>© 2026 · Confidential · Shared with Level Construction</div>
+  </footer>
+
+</main>
+
+</body>
+</html>

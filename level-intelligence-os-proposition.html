@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Level Intelligence OS - Detailed Proposition</title>
+  <link rel="icon" href="data:," />
+  <style>
+    :root {
+      --ink: #11161d;
+      --muted: #626d78;
+      --line: #d8dde3;
+      --paper: #f6f7f4;
+      --surface: #ffffff;
+      --accent: #0d806c;
+      --accent-soft: #e2f2ee;
+      --gold: #bd8427;
+      --blue: #4269d6;
+      --purple: #8b5ac2;
+      --dark: #17202b;
+      --risk: #b84a4a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        linear-gradient(rgba(17, 22, 29, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(17, 22, 29, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 30px 30px;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 0 32px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(246, 247, 244, 0.88);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      border: 2px solid var(--ink);
+      display: grid;
+      place-items: center;
+      font-weight: 850;
+      flex: 0 0 auto;
+    }
+
+    .brand b { display: block; font-size: 14px; line-height: 1.1; }
+    .brand span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+    .nav {
+      display: flex;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .nav a:hover { color: var(--ink); }
+
+    .hero {
+      min-height: calc(100svh - 64px);
+      display: grid;
+      grid-template-columns: minmax(380px, 0.88fr) minmax(620px, 1.12fr);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-copy {
+      padding: clamp(46px, 7vw, 96px) 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 20px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 11ch;
+      font-size: clamp(52px, 7vw, 110px);
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 58ch;
+      margin: 28px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .hero-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 36px;
+      max-width: 760px;
+    }
+
+    .hero-list div {
+      border-top: 2px solid var(--ink);
+      padding-top: 12px;
+      min-height: 98px;
+    }
+
+    .hero-list b { display: block; font-size: 13px; margin-bottom: 7px; }
+    .hero-list span { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; }
+
+    .hero-figure {
+      border-left: 1px solid var(--line);
+      padding: clamp(30px, 5vw, 72px);
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.26));
+    }
+
+    .compounding {
+      width: min(100%, 760px);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .loop {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      min-height: 78px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.74);
+      box-shadow: 0 14px 38px rgba(17,22,29,0.06);
+    }
+
+    .loop b {
+      display: grid;
+      place-items: center;
+      border-right: 1px solid var(--line);
+      font-size: 12px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .loop span {
+      padding: 17px 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.42;
+    }
+
+    section {
+      padding: 76px 32px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .head {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.72fr) minmax(460px, 1fr);
+      gap: 56px;
+      align-items: start;
+      margin-bottom: 38px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(34px, 4vw, 58px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
+
+    .panel {
+      min-height: 210px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.7);
+    }
+
+    .panel b {
+      display: block;
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .panel strong {
+      display: block;
+      font-size: 17px;
+      line-height: 1.18;
+      margin-bottom: 10px;
+    }
+
+    .panel span,
+    .panel p,
+    .panel li {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.42;
+    }
+
+    .panel ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 9px;
+    }
+
+    .figure {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+      padding: 22px;
+    }
+
+    .figure-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .figure-title h3 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.05;
+    }
+
+    .figure-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      max-width: 48ch;
+    }
+
+    .layers {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .layer {
+      min-height: 170px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-top-width: 4px;
+    }
+
+    .layer:nth-child(1) { border-top-color: var(--gold); }
+    .layer:nth-child(2) { border-top-color: var(--accent); }
+    .layer:nth-child(3) { border-top-color: var(--blue); }
+    .layer:nth-child(4) { border-top-color: var(--purple); }
+    .layer:nth-child(5) { border-top-color: var(--dark); }
+
+    .layer b {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .layer strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .layer span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.32;
+    }
+
+    .journey {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 9px;
+    }
+
+    .step {
+      min-height: 162px;
+      border-top: 2px solid var(--ink);
+      padding-top: 12px;
+    }
+
+    .step b { display: block; color: var(--muted); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 9px; }
+    .step strong { display: block; font-size: 14px; line-height: 1.18; margin-bottom: 8px; }
+    .step span { color: var(--muted); font-size: 12px; line-height: 1.34; }
+
+    .authority {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .rail {
+      min-height: 150px;
+      padding: 14px;
+      color: #fff;
+      background: var(--dark);
+    }
+
+    .rail:nth-child(1) { background: var(--accent); }
+    .rail:nth-child(2) { background: var(--gold); }
+    .rail:nth-child(3) { background: var(--purple); }
+    .rail:nth-child(4) { background: var(--risk); }
+    .rail b { display: block; font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px; }
+    .rail span { display: block; color: rgba(255,255,255,0.82); font-size: 13px; line-height: 1.36; }
+
+    .roi {
+      display: grid;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 0.9fr 1.2fr 0.95fr;
+      border-top: 1px solid var(--line);
+    }
+
+    .row:first-child {
+      border-top: 0;
+      color: #fff;
+      background: var(--dark);
+    }
+
+    .row div {
+      padding: 15px 16px;
+      border-left: 1px solid var(--line);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .row div:first-child { border-left: 0; font-weight: 760; }
+    .row:not(:first-child) div:not(:first-child) { color: var(--muted); }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .phase {
+      min-height: 218px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .phase b { display: block; color: var(--accent); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .phase strong { display: block; font-size: 18px; line-height: 1.14; margin-bottom: 11px; }
+    .phase span { color: var(--muted); font-size: 14px; line-height: 1.4; }
+
+    .dark-section {
+      background: var(--dark);
+      color: #fff;
+    }
+
+    .dark-section .head p,
+    .dark-section .panel span,
+    .dark-section .panel p {
+      color: rgba(255,255,255,0.74);
+    }
+
+    .dark-section .panel {
+      border-color: rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.06);
+    }
+
+    @media (max-width: 1080px) {
+      .hero,
+      .head,
+      .grid-2 { grid-template-columns: 1fr; }
+      .hero-figure { border-left: 0; border-top: 1px solid var(--line); }
+      .grid-4, .roadmap, .authority { grid-template-columns: repeat(2, 1fr); }
+      .layers { grid-template-columns: repeat(2, 1fr); }
+      .journey { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 720px) {
+      .top {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 16px 20px;
+      }
+      .nav {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .hero-copy, .hero-figure, section { padding-left: 20px; padding-right: 20px; }
+      h1 { font-size: 54px; }
+      .hero-list, .grid-3, .grid-4, .roadmap, .authority, .layers, .journey { grid-template-columns: 1fr; }
+      .loop, .row { grid-template-columns: 1fr; }
+      .loop b { min-height: 42px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .row div { border-left: 0; border-top: 1px solid var(--line); }
+      .row div:first-child { border-top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#top">
+      <span class="mark">LX</span>
+      <span><b>Level Intelligence OS</b><span>Detailed proposition</span></span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#pain">Pain</a>
+      <a href="#outcomes">Outcomes</a>
+      <a href="#feasible">Feasibility</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#agents">Agents</a>
+      <a href="#roi">ROI</a>
+      <a href="#pilot">Pilot</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Detailed proposition</p>
+        <h1>Internal software that compounds.</h1>
+        <p class="lead">Level Intelligence OS is a private operating layer for construction, development, hospitality, and capital work. It captures analog knowledge, structures messy language, routes agent-assisted decisions, and improves from Level's own outcomes.</p>
+        <div class="hero-list">
+          <div><b>Own the layer</b><span>Level controls the domain model, workflows, data, and roadmap.</span></div>
+          <div><b>Deliver outcomes</b><span>Code is the mechanism. Operating lift is the product.</span></div>
+          <div><b>Compound</b><span>Each signal, decision, win, loss, and delay improves future judgment.</span></div>
+        </div>
+      </div>
+      <div class="hero-figure">
+        <div class="compounding" aria-label="Compounding loop">
+          <div class="loop"><b>Capture</b><span>Signals, RFQs, emails, permits, notes, documents, meetings, and decisions.</span></div>
+          <div class="loop"><b>Structure</b><span>Agents extract entities, deadlines, risks, owners, context, and next actions.</span></div>
+          <div class="loop"><b>Decide</b><span>Humans approve consequential business moves with full reasoning and evidence.</span></div>
+          <div class="loop"><b>Measure</b><span>Win/loss, margin, cycle time, permit delay, and relationship outcomes are retained.</span></div>
+          <div class="loop"><b>Improve</b><span>The system gets sharper because it learns Level's actual operating history.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pain">
+      <div class="inner">
+        <div class="head">
+          <h2>The pain before the platform</h2>
+          <p>Level's advantage already exists in relationships, judgment, project memory, and execution discipline. The friction is that much of it is scattered across people, inboxes, RFQs, permits, spreadsheets, and status conversations.</p>
+        </div>
+        <div class="grid-3">
+          <div class="panel"><b>Scattered signals</b><strong>Opportunities arrive in fragments</strong><span>Permits, planning agendas, title changes, broker notes, franchise news, RFQs, and relationship updates appear in different places.</span></div>
+          <div class="panel"><b>Trapped judgment</b><strong>Knowledge is hard to reuse</strong><span>Context lives in individual memory, emails, spreadsheets, project folders, and informal notes.</span></div>
+          <div class="panel"><b>Status burden</b><strong>Leadership spends time assembling context</strong><span>Executives need to know what changed, what is stuck, who owns it, and what needs approval.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="outcomes">
+      <div class="inner">
+        <div class="head">
+          <h2>Outcomes, not just code</h2>
+          <p>The deliverable is not a codebase sitting on a shelf. It is a working operating rhythm that improves pipeline visibility, RFQ discipline, decision velocity, and enterprise memory.</p>
+        </div>
+        <div class="grid-3">
+          <div class="panel"><b>Pipeline visibility</b><strong>Know what moved</strong><span>Active pursuits have owners, stages, scores, next actions, and aging risk in one operating view.</span></div>
+          <div class="panel"><b>Decision velocity</b><strong>Move from status to judgment</strong><span>Approvals, exceptions, and weekly executive briefs surface what needs leadership attention.</span></div>
+          <div class="panel"><b>Institutional memory</b><strong>Keep the learning</strong><span>Wins, losses, vendor outcomes, permit delays, and overrides become reusable enterprise knowledge.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="feasible">
+      <div class="inner">
+        <div class="head">
+          <h2>Feasibility assessment</h2>
+          <p>This is feasible if scoped as an intelligence and operating layer first. It becomes risky only if framed as a full replacement for existing construction, accounting, or field systems before workflow evidence is gathered.</p>
+        </div>
+        <div class="grid-3">
+          <div class="panel"><b>High feasibility</b><strong>Start above existing tools</strong><span>The first build can sit across email, documents, spreadsheets, CRM, RFQs, and project systems. It does not need to replace them.</span></div>
+          <div class="panel"><b>Main constraints</b><strong>Data quality and adoption</strong><span>The system needs clean ownership, defined workflows, source access, and executive usage. The pilot should be narrow enough to prove trust.</span></div>
+          <div class="panel"><b>Recommended wedge</b><strong>Pipeline plus RFQ intelligence</strong><span>The strongest early value is opportunity visibility, relationship memory, RFQ triage, go/no-go memos, approvals, and weekly executive briefs.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="inner">
+        <div class="head">
+          <h2>Operating architecture</h2>
+          <p>The system should be built as seven connected layers. Each layer can improve independently as Level's markets, teams, and workflows change.</p>
+        </div>
+        <div class="figure">
+          <div class="figure-title">
+            <h3>Figure 1 - From signals to operating memory</h3>
+            <p>The architecture starts with raw sources and ends with executive visibility, workflow control, and compounding learning.</p>
+          </div>
+          <div class="layers">
+            <div class="layer"><b>Layer 1</b><strong>Sources</strong><span>Permits, planning, title, RFQs, email, CRM, docs, relationships, project systems.</span></div>
+            <div class="layer"><b>Layer 2</b><strong>Ingestion</strong><span>Extract entities, dates, scopes, owners, deadlines, documents, and confidence.</span></div>
+            <div class="layer"><b>Layer 3</b><strong>Domain model</strong><span>Accounts, contacts, opportunities, sites, RFQs, permits, bids, tasks, approvals.</span></div>
+            <div class="layer"><b>Layer 4</b><strong>Agent workforce</strong><span>Specialists summarize, score, compare, draft, route, and flag exceptions.</span></div>
+            <div class="layer"><b>Layer 5</b><strong>Operating views</strong><span>Executive brief, approval queue, opportunity pipeline, RFQ center, risk list.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="inner">
+        <div class="head">
+          <h2>Opportunity journey</h2>
+          <p>The client should see the system as a working journey. It turns messy market movement into structured decisions and measurable outcomes.</p>
+        </div>
+        <div class="journey">
+          <div class="step"><b>01 Signal</b><strong>Detect movement</strong><span>Permit, planning agenda, title transfer, broker note, brand expansion, or inbound RFQ.</span></div>
+          <div class="step"><b>02 Enrich</b><strong>Build context</strong><span>Connect site, owner, market, relationship history, jurisdiction, and similar work.</span></div>
+          <div class="step"><b>03 Qualify</b><strong>Score fit</strong><span>Explain pursue, watch, or pass using Level-specific criteria and missing info.</span></div>
+          <div class="step"><b>04 Route</b><strong>Assign next action</strong><span>Send the right brief to BD, precon, development, hospitality, capital, or executives.</span></div>
+          <div class="step"><b>05 Approve</b><strong>Control risk</strong><span>External outreach, bid submissions, awards, budgets, and investor notes require approval.</span></div>
+          <div class="step"><b>06 Learn</b><strong>Retain outcome</strong><span>Wins, losses, delays, margin, response time, and overrides improve the system.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="agents">
+      <div class="inner">
+        <div class="head">
+          <h2>Agentic structure</h2>
+          <p>Agents should be specialist operators with bounded tools, permissions, audit logs, and clear escalation rules. They are not a generic chatbot.</p>
+        </div>
+        <div class="grid-4">
+          <div class="panel"><b>Scout</b><strong>Signal and opportunity agent</strong><span>Detects signals, dedupes records, summarizes evidence, proposes owner and next action.</span></div>
+          <div class="panel"><b>Qualify</b><strong>Fit scoring agent</strong><span>Scores opportunities, explains rationale, retrieves similar work, recommends pursue/watch/pass.</span></div>
+          <div class="panel"><b>Relationship</b><strong>Account memory agent</strong><span>Builds account briefs, finds warm intros, tracks last touch, and drafts outreach.</span></div>
+          <div class="panel"><b>RFQ and permit</b><strong>Workflow agents</strong><span>Summarize packages, extract deadlines, draft go/no-go memos, flag blockers, and create tasks.</span></div>
+        </div>
+        <div style="height:18px"></div>
+        <div class="authority">
+          <div class="rail"><b>Autonomous</b><span>Summaries, classification, dedupe, internal briefs, search, score drafts.</span></div>
+          <div class="rail"><b>Suggest</b><span>Tasks, stage updates, draft emails, next action, internal reminders.</span></div>
+          <div class="rail"><b>Approve</b><span>External outreach, bid submission, vendor award, budget change, investor message.</span></div>
+          <div class="rail"><b>Manual</b><span>Contracts, financing, legal commitments, final strategic go/no-go decisions.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="roi">
+      <div class="inner">
+        <div class="head">
+          <h2>ROI and value model</h2>
+          <p>The one-page case should not rely only on labor savings. The larger argument is better pursuit, stronger memory, faster decisions, and a proprietary operating dataset.</p>
+        </div>
+        <div class="roi" role="table" aria-label="ROI levers">
+          <div class="row"><div>Value Lever</div><div>How Value Is Created</div><div>How To Measure</div></div>
+          <div class="row"><div>Opportunity capture</div><div>Signals become structured opportunities with owner, score, source, and next action.</div><div>Signals captured, conversion rate, time to first action, wins by source.</div></div>
+          <div class="row"><div>Pursuit discipline</div><div>Low-fit pursuits are filtered earlier while high-fit work gets faster attention.</div><div>Go/no-go cycle time, win rate by score, avoided pursuit hours, margin by source.</div></div>
+          <div class="row"><div>Admin reduction</div><div>Agents summarize, extract, draft, route, and remind across language-heavy workflows.</div><div>Hours saved per RFQ, report time saved, overdue task reduction.</div></div>
+          <div class="row"><div>Risk reduction</div><div>Permits, missing docs, stalled decisions, and deadline risk surface sooner.</div><div>Permits past expected review, response time, missed deadline rate.</div></div>
+          <div class="row"><div>Enterprise asset</div><div>Relationships, decisions, outcomes, vendors, and market patterns become private memory.</div><div>Record completeness, recommendation accuracy, override rate, reuse of history.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pilot">
+      <div class="inner">
+        <div class="head">
+          <h2>90-day pilot</h2>
+          <p>The pilot should prove usefulness quickly while preserving a path to deeper workflows, integrations, and software ownership.</p>
+        </div>
+        <div class="roadmap">
+          <div class="phase"><b>Weeks 1-2</b><strong>Foundation</strong><span>Data model, imports, roles, active pipeline, account/contact layer, opportunity views.</span></div>
+          <div class="phase"><b>Weeks 3-5</b><strong>Intelligence</strong><span>Signal inbox, AI summaries, qualification score, relationship briefs, weekly digest.</span></div>
+          <div class="phase"><b>Weeks 6-8</b><strong>Workflow</strong><span>RFQ intake, go/no-go memo, bid deadlines, approval queue, permit tracker foundation.</span></div>
+          <div class="phase"><b>Weeks 9-12</b><strong>Operating rhythm</strong><span>Weekly executive brief, stuck-decision reporting, outcome tracking, integration roadmap.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dark-section">
+      <div class="inner">
+        <div class="head">
+          <h2>What makes this convincing</h2>
+          <p>The strongest argument is not that AI can automate tasks. It is that Level can own a living software layer that gets more valuable as the company uses it.</p>
+        </div>
+        <div class="grid-3">
+          <div class="panel"><b>Proof wedge</b><strong>Start where value is visible</strong><span>Pipeline clarity, RFQ triage, relationship briefs, approval queues, and executive reporting.</span></div>
+          <div class="panel"><b>Trust model</b><strong>Keep humans in control</strong><span>Agents prepare decisions and explain reasoning. Humans approve money, outreach, vendors, legal, and investors.</span></div>
+          <div class="panel"><b>Strategic asset</b><strong>Build enterprise memory</strong><span>The system compounds because it learns from Level's own opportunities, decisions, outcomes, and relationships. The code matters because it produces durable operating outcomes.</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

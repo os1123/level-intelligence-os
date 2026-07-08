@@ -1,0 +1,2189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Level Intelligence OS — Two Paths · Scroll site</title>
+  <link rel="icon" href="data:," />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --paper: #f6f7f4;
+      --ink: #11161d;
+    }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, system-ui, sans-serif;
+      scroll-behavior: smooth;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-padding-top: 64px; }
+    /* prevent overscroll bounce on macOS that breaks sticky math */
+    html, body { overscroll-behavior-y: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- animations.jsx (inlined) -->
+  <script type="text/babel" data-presets="env,react">
+
+// animations.jsx
+// Reusable animation starter: Stage, Timeline, Sprite, easing helpers.
+// Usage (in an HTML file that loads React + Babel):
+//
+//   <Stage width={1280} height={720} duration={10} background="#f6f4ef">
+//     <MyScene />
+//   </Stage>
+//
+// Inside <Stage>, any child can call useTime() to read the current
+// playhead (seconds). Or wrap content in <Sprite start={1} end={4}>...</Sprite>
+// to only render during that window -- children receive a `localTime` and
+// `progress` via the useSprite() hook.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Easing functions (hand-rolled, Popmotion-style) ─────────────────────────
+// All easings take t ∈ [0,1] and return eased t ∈ [0,1] (may overshoot for back/elastic).
+const Easing = {
+  linear: (t) => t,
+
+  // Quad
+  easeInQuad:    (t) => t * t,
+  easeOutQuad:   (t) => t * (2 - t),
+  easeInOutQuad: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+
+  // Cubic
+  easeInCubic:    (t) => t * t * t,
+  easeOutCubic:   (t) => (--t) * t * t + 1,
+  easeInOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+
+  // Quart
+  easeInQuart:    (t) => t * t * t * t,
+  easeOutQuart:   (t) => 1 - (--t) * t * t * t,
+  easeInOutQuart: (t) => (t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t),
+
+  // Expo
+  easeInExpo:  (t) => (t === 0 ? 0 : Math.pow(2, 10 * (t - 1))),
+  easeOutExpo: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+  easeInOutExpo: (t) => {
+    if (t === 0) return 0;
+    if (t === 1) return 1;
+    if (t < 0.5) return 0.5 * Math.pow(2, 20 * t - 10);
+    return 1 - 0.5 * Math.pow(2, -20 * t + 10);
+  },
+
+  // Sine
+  easeInSine:    (t) => 1 - Math.cos((t * Math.PI) / 2),
+  easeOutSine:   (t) => Math.sin((t * Math.PI) / 2),
+  easeInOutSine: (t) => -(Math.cos(Math.PI * t) - 1) / 2,
+
+  // Back (overshoot)
+  easeOutBack: (t) => {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  },
+  easeInBack: (t) => {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return c3 * t * t * t - c1 * t * t;
+  },
+  easeInOutBack: (t) => {
+    const c1 = 1.70158, c2 = c1 * 1.525;
+    return t < 0.5
+      ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+      : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
+  },
+
+  // Elastic
+  easeOutElastic: (t) => {
+    const c4 = (2 * Math.PI) / 3;
+    if (t === 0) return 0;
+    if (t === 1) return 1;
+    return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+  },
+};
+
+// ── Core interpolation helpers ──────────────────────────────────────────────
+
+// Clamp a value to [min, max]
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+// interpolate([0, 0.5, 1], [0, 100, 50], ease?) -> fn(t)
+// Popmotion-style: linearly maps t across input keyframes to output values,
+// with optional easing per segment (single fn or array of fns).
+function interpolate(input, output, ease = Easing.linear) {
+  return (t) => {
+    if (t <= input[0]) return output[0];
+    if (t >= input[input.length - 1]) return output[output.length - 1];
+    for (let i = 0; i < input.length - 1; i++) {
+      if (t >= input[i] && t <= input[i + 1]) {
+        const span = input[i + 1] - input[i];
+        const local = span === 0 ? 0 : (t - input[i]) / span;
+        const easeFn = Array.isArray(ease) ? (ease[i] || Easing.linear) : ease;
+        const eased = easeFn(local);
+        return output[i] + (output[i + 1] - output[i]) * eased;
+      }
+    }
+    return output[output.length - 1];
+  };
+}
+
+// animate({from, to, start, end, ease})(t) — simpler single-segment tween.
+// Returns `from` before `start`, `to` after `end`.
+function animate({ from = 0, to = 1, start = 0, end = 1, ease = Easing.easeInOutCubic }) {
+  return (t) => {
+    if (t <= start) return from;
+    if (t >= end) return to;
+    const local = (t - start) / (end - start);
+    return from + (to - from) * ease(local);
+  };
+}
+
+// ── Timeline context ────────────────────────────────────────────────────────
+
+const TimelineContext = React.createContext({ time: 0, duration: 10, playing: false });
+
+const useTime = () => React.useContext(TimelineContext).time;
+const useTimeline = () => React.useContext(TimelineContext);
+
+// ── Sprite ──────────────────────────────────────────────────────────────────
+// Renders children only when the playhead is inside [start, end]. Provides
+// a sub-context with `localTime` (seconds since start) and `progress` (0..1).
+//
+//   <Sprite start={2} end={5}>
+//     {({ localTime, progress }) => <Thing x={progress * 100} />}
+//   </Sprite>
+//
+// Or as a plain wrapper — children can call useSprite() themselves.
+
+const SpriteContext = React.createContext({ localTime: 0, progress: 0, duration: 0 });
+const useSprite = () => React.useContext(SpriteContext);
+
+function Sprite({ start = 0, end = Infinity, children, keepMounted = false }) {
+  const { time } = useTimeline();
+  const visible = time >= start && time <= end;
+  if (!visible && !keepMounted) return null;
+
+  const duration = end - start;
+  const localTime = Math.max(0, time - start);
+  const progress = duration > 0 && isFinite(duration)
+    ? clamp(localTime / duration, 0, 1)
+    : 0;
+
+  const value = { localTime, progress, duration, visible };
+
+  return (
+    <SpriteContext.Provider value={value}>
+      {typeof children === 'function' ? children(value) : children}
+    </SpriteContext.Provider>
+  );
+}
+
+// ── Sample sprite components ────────────────────────────────────────────────
+
+// TextSprite: fades/slides text in on entry, holds, then fades out on exit.
+// Props: text, x, y, size, color, font, entryDur, exitDur, align
+function TextSprite({
+  text,
+  x = 0, y = 0,
+  size = 48,
+  color = '#111',
+  font = 'Inter, system-ui, sans-serif',
+  weight = 600,
+  entryDur = 0.45,
+  exitDur = 0.35,
+  entryEase = Easing.easeOutBack,
+  exitEase = Easing.easeInCubic,
+  align = 'left',
+  letterSpacing = '-0.01em',
+}) {
+  const { localTime, duration } = useSprite();
+  const exitStart = Math.max(0, duration - exitDur);
+
+  let opacity = 1;
+  let ty = 0;
+
+  if (localTime < entryDur) {
+    const t = entryEase(clamp(localTime / entryDur, 0, 1));
+    opacity = t;
+    ty = (1 - t) * 16;
+  } else if (localTime > exitStart) {
+    const t = exitEase(clamp((localTime - exitStart) / exitDur, 0, 1));
+    opacity = 1 - t;
+    ty = -t * 8;
+  }
+
+  const translateX = align === 'center' ? '-50%' : align === 'right' ? '-100%' : '0';
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x, top: y,
+      transform: `translate(${translateX}, ${ty}px)`,
+      opacity,
+      fontFamily: font,
+      fontSize: size,
+      fontWeight: weight,
+      color,
+      letterSpacing,
+      whiteSpace: 'pre',
+      lineHeight: 1.1,
+      willChange: 'transform, opacity',
+    }}>
+      {text}
+    </div>
+  );
+}
+
+// ImageSprite: scales + fades in; optional Ken Burns drift during hold.
+function ImageSprite({
+  src,
+  x = 0, y = 0,
+  width = 400, height = 300,
+  entryDur = 0.6,
+  exitDur = 0.4,
+  kenBurns = false,
+  kenBurnsScale = 1.08,
+  radius = 12,
+  fit = 'cover',
+  placeholder = null, // {label: string} for striped placeholder
+}) {
+  const { localTime, duration } = useSprite();
+  const exitStart = Math.max(0, duration - exitDur);
+
+  let opacity = 1;
+  let scale = 1;
+
+  if (localTime < entryDur) {
+    const t = Easing.easeOutCubic(clamp(localTime / entryDur, 0, 1));
+    opacity = t;
+    scale = 0.96 + 0.04 * t;
+  } else if (localTime > exitStart) {
+    const t = Easing.easeInCubic(clamp((localTime - exitStart) / exitDur, 0, 1));
+    opacity = 1 - t;
+    scale = (kenBurns ? kenBurnsScale : 1) + 0.02 * t;
+  } else if (kenBurns) {
+    const holdSpan = exitStart - entryDur;
+    const holdT = holdSpan > 0 ? (localTime - entryDur) / holdSpan : 0;
+    scale = 1 + (kenBurnsScale - 1) * holdT;
+  }
+
+  const content = placeholder ? (
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'repeating-linear-gradient(135deg, #e9e6df 0 10px, #dcd8cf 10px 20px)',
+      color: '#6b6458',
+      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      fontSize: 13,
+      letterSpacing: '0.04em',
+      textTransform: 'uppercase',
+    }}>
+      {placeholder.label || 'image'}
+    </div>
+  ) : (
+    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: fit, display: 'block' }} />
+  );
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x, top: y,
+      width, height,
+      opacity,
+      transform: `scale(${scale})`,
+      transformOrigin: 'center',
+      borderRadius: radius,
+      overflow: 'hidden',
+      willChange: 'transform, opacity',
+    }}>
+      {content}
+    </div>
+  );
+}
+
+// RectSprite: simple rectangle that animates position/size/color via props.
+// Useful demo primitive — takes a `render` fn for per-frame customization.
+function RectSprite({
+  x = 0, y = 0,
+  width = 100, height = 100,
+  color = '#111',
+  radius = 8,
+  entryDur = 0.4,
+  exitDur = 0.3,
+  render, // optional: (ctx) => style overrides
+}) {
+  const spriteCtx = useSprite();
+  const { localTime, duration } = spriteCtx;
+  const exitStart = Math.max(0, duration - exitDur);
+
+  let opacity = 1;
+  let scale = 1;
+
+  if (localTime < entryDur) {
+    const t = Easing.easeOutBack(clamp(localTime / entryDur, 0, 1));
+    opacity = clamp(localTime / entryDur, 0, 1);
+    scale = 0.4 + 0.6 * t;
+  } else if (localTime > exitStart) {
+    const t = Easing.easeInQuad(clamp((localTime - exitStart) / exitDur, 0, 1));
+    opacity = 1 - t;
+    scale = 1 - 0.15 * t;
+  }
+
+  const overrides = render ? render(spriteCtx) : {};
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x, top: y,
+      width, height,
+      background: color,
+      borderRadius: radius,
+      opacity,
+      transform: `scale(${scale})`,
+      transformOrigin: 'center',
+      willChange: 'transform, opacity',
+      ...overrides,
+    }} />
+  );
+}
+
+
+function Stage({
+  width = 1280,
+  height = 720,
+  duration = 10,
+  background = '#f6f4ef',
+  fps = 60,
+  loop = true,
+  autoplay = true,
+  persistKey = 'animstage',
+  children,
+}) {
+  const [time, setTime] = React.useState(() => {
+    try {
+      const v = parseFloat(localStorage.getItem(persistKey + ':t') || '0');
+      return isFinite(v) ? clamp(v, 0, duration) : 0;
+    } catch { return 0; }
+  });
+  const [playing, setPlaying] = React.useState(autoplay);
+  const [hoverTime, setHoverTime] = React.useState(null);
+  const [scale, setScale] = React.useState(1);
+
+  const stageRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
+  const rafRef = React.useRef(null);
+  const lastTsRef = React.useRef(null);
+
+  // Persist playhead
+  React.useEffect(() => {
+    try { localStorage.setItem(persistKey + ':t', String(time)); } catch {}
+  }, [time, persistKey]);
+
+  // Auto-scale to fit viewport
+  React.useEffect(() => {
+    if (!stageRef.current) return;
+    const el = stageRef.current;
+    const measure = () => {
+      const barH = 44; // playback bar height
+      const s = Math.min(
+        el.clientWidth / width,
+        (el.clientHeight - barH) / height
+      );
+      setScale(Math.max(0.05, s));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [width, height]);
+
+  // Animation loop
+  React.useEffect(() => {
+    if (!playing) {
+      lastTsRef.current = null;
+      return;
+    }
+    const step = (ts) => {
+      if (lastTsRef.current == null) lastTsRef.current = ts;
+      const dt = (ts - lastTsRef.current) / 1000;
+      lastTsRef.current = ts;
+      setTime((t) => {
+        let next = t + dt;
+        if (next >= duration) {
+          if (loop) next = next % duration;
+          else { next = duration; setPlaying(false); }
+        }
+        return next;
+      });
+      rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      lastTsRef.current = null;
+    };
+  }, [playing, duration, loop]);
+
+  // Keyboard: space = play/pause, ← → = seek
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setPlaying(p => !p);
+      } else if (e.code === 'ArrowLeft') {
+        setTime(t => clamp(t - (e.shiftKey ? 1 : 0.1), 0, duration));
+      } else if (e.code === 'ArrowRight') {
+        setTime(t => clamp(t + (e.shiftKey ? 1 : 0.1), 0, duration));
+      } else if (e.key === '0' || e.code === 'Home') {
+        setTime(0);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [duration]);
+
+  const displayTime = hoverTime != null ? hoverTime : time;
+
+  const ctxValue = React.useMemo(
+    () => ({ time: displayTime, duration, playing, setTime, setPlaying }),
+    [displayTime, duration, playing]
+  );
+
+  return (
+    <div
+      ref={stageRef}
+      style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center',
+        background: '#0a0a0a',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}
+    >
+      {/* Canvas area — vertically centered in remaining space */}
+      <div style={{
+        flex: 1,
+        width: '100%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden',
+        minHeight: 0,
+      }}>
+        <div
+          ref={canvasRef}
+          style={{
+            width, height,
+            background,
+            position: 'relative',
+            transform: `scale(${scale})`,
+            transformOrigin: 'center',
+            flexShrink: 0,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+            overflow: 'hidden',
+          }}
+        >
+          <TimelineContext.Provider value={ctxValue}>
+            {children}
+          </TimelineContext.Provider>
+        </div>
+      </div>
+
+      {/* Playback bar — stacked below canvas, never overlapping */}
+      <PlaybackBar
+        time={displayTime}
+        actualTime={time}
+        duration={duration}
+        playing={playing}
+        onPlayPause={() => setPlaying(p => !p)}
+        onReset={() => { setTime(0); }}
+        onSeek={(t) => setTime(t)}
+        onHover={(t) => setHoverTime(t)}
+      />
+    </div>
+  );
+}
+
+// ── Playback bar ────────────────────────────────────────────────────────────
+// Play/pause, return-to-begin, scrub track, time display.
+// Uses fixed-width time fields so layout doesn't thrash.
+
+function PlaybackBar({ time, duration, playing, onPlayPause, onReset, onSeek, onHover }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+
+  const timeFromEvent = React.useCallback((e) => {
+    const rect = trackRef.current.getBoundingClientRect();
+    const x = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+    return x * duration;
+  }, [duration]);
+
+  const onTrackMove = (e) => {
+    if (!trackRef.current) return;
+    const t = timeFromEvent(e);
+    if (dragging) {
+      onSeek(t);
+    } else {
+      onHover(t);
+    }
+  };
+
+  const onTrackLeave = () => {
+    if (!dragging) onHover(null);
+  };
+
+  const onTrackDown = (e) => {
+    setDragging(true);
+    const t = timeFromEvent(e);
+    onSeek(t);
+    onHover(null);
+  };
+
+  React.useEffect(() => {
+    if (!dragging) return;
+    const onUp = () => setDragging(false);
+    const onMove = (e) => {
+      if (!trackRef.current) return;
+      const t = timeFromEvent(e);
+      onSeek(t);
+    };
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('mousemove', onMove);
+    return () => {
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('mousemove', onMove);
+    };
+  }, [dragging, timeFromEvent, onSeek]);
+
+  const pct = duration > 0 ? (time / duration) * 100 : 0;
+  const fmt = (t) => {
+    const total = Math.max(0, t);
+    const m = Math.floor(total / 60);
+    const s = Math.floor(total % 60);
+    const cs = Math.floor((total * 100) % 100);
+    return `${String(m).padStart(1, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
+  };
+
+  const mono = 'JetBrains Mono, ui-monospace, SFMono-Regular, monospace';
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '8px 16px',
+      background: 'rgba(20,20,20,0.92)',
+      borderTop: '1px solid rgba(255,255,255,0.08)',
+      width: '100%',
+      maxWidth: 680,
+      alignSelf: 'center',
+
+      borderRadius: 8,
+      color: '#f6f4ef',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      userSelect: 'none',
+      flexShrink: 0,
+    }}>
+      <IconButton onClick={onReset} title="Return to start (0)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 2v10M12 2L5 7l7 5V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+        </svg>
+      </IconButton>
+      <IconButton onClick={onPlayPause} title="Play/pause (space)">
+        {playing ? (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="3" y="2" width="3" height="10" fill="currentColor"/>
+            <rect x="8" y="2" width="3" height="10" fill="currentColor"/>
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 2l9 5-9 5V2z" fill="currentColor"/>
+          </svg>
+        )}
+      </IconButton>
+
+      {/* Current time: fixed width so it doesn't thrash */}
+      <div style={{
+        fontFamily: mono,
+        fontSize: 12,
+        fontVariantNumeric: 'tabular-nums',
+        width: 64, textAlign: 'right',
+        color: '#f6f4ef',
+      }}>
+        {fmt(time)}
+      </div>
+
+      {/* Scrub track */}
+      <div
+        ref={trackRef}
+        onMouseMove={onTrackMove}
+        onMouseLeave={onTrackLeave}
+        onMouseDown={onTrackDown}
+        style={{
+          flex: 1,
+          height: 22,
+          position: 'relative',
+          cursor: 'pointer',
+          display: 'flex', alignItems: 'center',
+        }}
+      >
+        <div style={{
+          position: 'absolute',
+          left: 0, right: 0, height: 4,
+          background: 'rgba(255,255,255,0.12)',
+          borderRadius: 2,
+        }}/>
+        <div style={{
+          position: 'absolute',
+          left: 0, width: `${pct}%`, height: 4,
+          background: 'oklch(72% 0.12 250)',
+          borderRadius: 2,
+        }}/>
+        <div style={{
+          position: 'absolute',
+          left: `${pct}%`, top: '50%',
+          width: 12, height: 12,
+          marginLeft: -6, marginTop: -6,
+          background: '#fff',
+          borderRadius: 6,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
+        }}/>
+      </div>
+
+      {/* Duration: fixed width */}
+      <div style={{
+        fontFamily: mono,
+        fontSize: 12,
+        fontVariantNumeric: 'tabular-nums',
+        width: 64, textAlign: 'left',
+        color: 'rgba(246,244,239,0.55)',
+      }}>
+        {fmt(duration)}
+      </div>
+    </div>
+  );
+}
+
+function IconButton({ children, onClick, title }) {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        width: 28, height: 28,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: hover ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 6,
+        color: '#f6f4ef',
+        cursor: 'pointer',
+        padding: 0,
+        transition: 'background 120ms',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+
+Object.assign(window, {
+  Easing, interpolate, animate, clamp,
+  TimelineContext, useTime, useTimeline,
+  Sprite, SpriteContext, useSprite,
+  TextSprite, ImageSprite, RectSprite,
+  Stage, PlaybackBar,
+});
+
+
+  </script>
+
+  <!-- compare-data.jsx (inlined) -->
+  <script type="text/babel" data-presets="env,react">
+// compare-data.jsx — story data + timing for the Two Paths animation.
+
+// Overall stage duration (seconds)
+const DURATION = 58;
+
+// Master beat clock
+const BEATS = {
+  introStart: 0.0,
+  introEnd:   3.2,
+
+  // Lanes start operating
+  laneStart:  3.4,
+
+  // OS lane completes its six steps by ~13.5s
+  osLaneEnd:  13.8,
+
+  // ROI counters build between these times
+  roiStart:   14.0,
+  roiEnd:     48.0,
+
+  // Executive view materializes
+  execStart:  15.2,
+
+  // Final "Day 31 · opportunity lost" beat
+  tradLaneEnd: 47.0,
+
+  // Final summary
+  summaryStart: 48.5,
+  summaryEnd:   58.0,
+};
+
+// 6 unified pipeline stages. Same six on both sides — just routed
+// through agents on one side, and through people / inboxes on the other.
+const STAGES = [
+  { key: 'detect',  label: 'Detect',  desc: 'New signal surfaces' },
+  { key: 'verify',  label: 'Verify',  desc: 'Filing & scope parsed' },
+  { key: 'context', label: 'Context', desc: 'Relationship history pulled' },
+  { key: 'score',   label: 'Score',   desc: 'Qualify against criteria' },
+  { key: 'brief',   label: 'Brief',   desc: 'Pursuit memo assembled' },
+  { key: 'decide',  label: 'Decide',  desc: 'Approver acts' },
+];
+
+// LEVEL OS LANE: clock is Day 1 only; every stage finishes inside
+// a normal morning. `t` is when the stage activates on the timeline.
+const OS_STEPS = [
+  {
+    stage: 'detect',  agent: 'Scout',     clock: '09:14',
+    msg: 'Travis County · HGI Cedar Park · 120-key · applicant Carter',
+    t: 4.2,
+  },
+  {
+    stage: 'verify',  agent: 'Permit',    clock: '09:14',
+    msg: 'Plan review queue · 22d · scope = new-build · hospitality',
+    t: 5.4,
+  },
+  {
+    stage: 'context', agent: 'Memory',    clock: '09:15',
+    msg: 'Carter · strength 0.78 · 3 prior bids · 2 wins · last touch 14d',
+    t: 6.8,
+  },
+  {
+    stage: 'score',   agent: 'Qualifier', clock: '09:16',
+    msg: 'Score 0.84 · pursue · comparable: Plano HGI (won, 0.81)',
+    t: 8.4,
+  },
+  {
+    stage: 'brief',   agent: 'Bid',       clock: '09:18',
+    msg: 'Pursuit brief drafted · 2 open questions for Carter',
+    t: 10.4,
+  },
+  {
+    stage: 'decide',  agent: 'Brief → Levin', clock: '09:20',
+    msg: 'Approval queued · M. Levin · move to pursue',
+    t: 12.8,
+  },
+];
+
+// TRADITIONAL LANE: same six stages, but distended across a month.
+// `t` is when the stage advances on screen. `status` controls colour.
+const TRAD_STEPS = [
+  {
+    stage: 'detect',  who: 'BD inbox',           day: 'Day 1',  dayN: 1,
+    msg: 'Permit email landed · sat in inbox for 3 days',
+    t: 5.5,  status: 'slow',
+  },
+  {
+    stage: 'verify',  who: 'BD lead',            day: 'Day 5',  dayN: 5,
+    msg: 'Forwarded to Sara — "can you look at this?"',
+    t: 11.0, status: 'slow',
+  },
+  {
+    stage: 'context', who: 'Sara · CRM',         day: 'Day 9',  dayN: 9,
+    msg: 'CRM stale · pinging team about Carter history',
+    t: 17.5, status: 'wait',
+  },
+  {
+    stage: 'score',   who: 'Sara + Mark',        day: 'Day 16', dayN: 16,
+    msg: 'Memo drafted · two team members give conflicting numbers',
+    t: 25.5, status: 'wait',
+  },
+  {
+    stage: 'brief',   who: 'M. Levin · OOO',     day: 'Day 23', dayN: 23,
+    msg: 'Levin out of office · Slack thread loops · no decision',
+    t: 34.5, status: 'flag',
+  },
+  {
+    stage: 'decide',  who: '—',                   day: 'Day 31', dayN: 31,
+    msg: 'RFQ deadline passed · pursuit dropped · signal lost',
+    t: 44.5, status: 'lost',
+  },
+];
+
+// COMPARE_METRICS — paired Path A vs Path B values that tick live across
+// the timeline. Each metric has two `frames` lists (one per path) of
+// [time, value] keyframes. Numeric metrics interpolate linearly between
+// frames; text metrics step to the latest reached frame.
+//
+// Hours are pegged to an assumed BD-time rate of $150/hr (`HOURLY_RATE`)
+// to produce the executive-friendly dollar sub-line.
+const HOURLY_RATE = 150;
+const fmtMoney = (h) => {
+  const v = h * HOURLY_RATE;
+  return v >= 1000 ? `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `$${Math.round(v)}`;
+};
+
+const COMPARE_METRICS = [
+  {
+    key: 'hours',
+    label: 'Hours of human work',
+    suffix: ' hrs',
+    a: {
+      frames: [
+        [BEATS.laneStart, 0],
+        [5.5, 1.5], [11, 3.0], [17.5, 5.5],
+        [25.5, 8.5], [34.5, 11.5], [44.5, 14.0],
+      ],
+      decimals: 1,
+      noteFn: (v) => `${fmtMoney(v)} of BD time burned`,
+    },
+    b: {
+      frames: [
+        [BEATS.laneStart, 0],
+        [4.2, 0.05], [5.4, 0.10], [6.8, 0.15],
+        [8.4, 0.25], [10.4, 0.40], [12.8, 0.50],
+      ],
+      decimals: 2,
+      noteFn: (v) => `${fmtMoney(v)} of judgement-only time`,
+    },
+    sub: 'Path B reserves humans for judgement — not coordination.',
+  },
+  {
+    key: 'days',
+    label: 'Days to decision',
+    suffix: '',
+    a: {
+      frames: [
+        [BEATS.laneStart, 0],
+        [5.5, 1], [11, 5], [17.5, 9],
+        [25.5, 16], [34.5, 23], [44.5, 31],
+      ],
+      decimals: 0,
+      noteFn: (v) => v >= 31 ? 'past the RFQ deadline' : `still in flight`,
+    },
+    b: {
+      frames: [
+        [BEATS.laneStart, 0], [4.2, 1], [12.8, 1],
+      ],
+      decimals: 0,
+      noteFn: () => 'closed inside one morning',
+    },
+    sub: 'One morning vs. a missed deadline.',
+  },
+  {
+    key: 'signals',
+    label: 'Signals captured this week',
+    suffix: '',
+    a: {
+      // 4 signals arrive; only 1 gets fully captured before going stale
+      frames: [
+        [BEATS.laneStart, 0],
+        [5.5, 1], [11, 1], [17.5, 1],
+        [25.5, 1], [34.5, 1], [44.5, 1],
+      ],
+      decimals: 0,
+      noteFn: () => '3 dropped on the floor',
+    },
+    b: {
+      frames: [
+        [BEATS.laneStart, 0],
+        [4.2, 1], [6.8, 3], [8.4, 6],
+        [10.4, 9], [12.8, 12], [30, 12],
+      ],
+      decimals: 0,
+      noteFn: () => '0 dropped · everything routed',
+    },
+    sub: 'Every inbound goes to the same operating context.',
+  },
+  {
+    key: 'visibility',
+    label: 'Executive visibility',
+    isText: true,
+    a: {
+      frames: [
+        [BEATS.laneStart, 'On · fresh'],
+        [11, 'Stale'],
+        [17.5, 'Slack-only'],
+        [25.5, 'Stale'],
+        [34.5, 'OOO'],
+        [44.5, 'Lost'],
+      ],
+      noteFn: (v) =>
+        v === 'Lost'  ? 'no clean line of sight' :
+        v === 'OOO'   ? 'last sync 6+ days ago'  :
+        v === 'Stale' ? 'snapshot, not live'     :
+        v === 'Slack-only' ? 'threads, not pipeline' :
+        'fresh briefing on hand',
+    },
+    b: {
+      frames: [
+        [BEATS.laneStart, 'Live'], [12.8, 'Live'],
+      ],
+      pulse: true,
+      noteFn: () => 'proactive · on-demand · deep',
+    },
+    sub: 'M. Levin can tap in at any moment — and gets pushed before he asks.',
+  },
+];
+
+// Evaluate a metric's numeric value at time t using its frame keyframes.
+function evalFramesNum(t, frames) {
+  if (!frames || frames.length === 0) return 0;
+  if (t <= frames[0][0]) return frames[0][1];
+  if (t >= frames[frames.length - 1][0]) return frames[frames.length - 1][1];
+  for (let i = 0; i < frames.length - 1; i++) {
+    const [t1, v1] = frames[i];
+    const [t2, v2] = frames[i + 1];
+    if (t >= t1 && t <= t2) {
+      const span = t2 - t1;
+      const p = span === 0 ? 0 : (t - t1) / span;
+      return v1 + p * (v2 - v1);
+    }
+  }
+  return frames[frames.length - 1][1];
+}
+
+// Evaluate a metric's text value at time t — step to latest reached frame.
+function evalFramesText(t, frames) {
+  if (!frames || frames.length === 0) return '';
+  let v = frames[0][1];
+  for (let i = 0; i < frames.length; i++) {
+    if (t >= frames[i][0]) v = frames[i][1];
+  }
+  return v;
+}
+
+Object.assign(window, {
+  DURATION, BEATS, STAGES, OS_STEPS, TRAD_STEPS,
+  COMPARE_METRICS, HOURLY_RATE, fmtMoney,
+  evalFramesNum, evalFramesText,
+});
+
+  </script>
+
+  <!-- compare-components.jsx (inlined) -->
+  <script type="text/babel" data-presets="env,react">
+// compare-components.jsx — reusable UI parts for the Two Paths animation.
+
+const { Sprite, useTime, useSprite, interpolate, animate, Easing, clamp } = window;
+
+// ── tokens (mirror the deck) ────────────────────────────────────────────────
+const C = {
+  ink:    '#11161d',
+  ink2:   '#2a323c',
+  muted:  '#626d78',
+  muted2: '#8a96a2',
+  line:   '#d8dde3',
+  line2:  '#ebeef2',
+  paper:  '#f6f7f4',
+  paper2: '#efefe9',
+  surface:'#ffffff',
+  green:  '#0d806c',
+  green2: '#e2f2ee',
+  green3: '#f6fbf9',
+  gold:   '#bd8427',
+  gold2:  '#f5e9d2',
+  blue:   '#4269d6',
+  blue2:  '#e2eaf6',
+  dark:   '#17202b',
+  dark2:  '#243040',
+  risk:   '#b84a4a',
+  risk2:  '#f6dede',
+};
+
+// ── small helpers ───────────────────────────────────────────────────────────
+const fadeIn = (t, start, dur = 0.45, ease = Easing.easeOutCubic) =>
+  ease(clamp((t - start) / dur, 0, 1));
+
+const fadeOut = (t, start, dur = 0.4, ease = Easing.easeInCubic) =>
+  1 - ease(clamp((t - start) / dur, 0, 1));
+
+// Eased number that climbs through a list of (time, value) keyframes.
+const stepValueAt = (t, frames) => {
+  for (let i = frames.length - 1; i >= 0; i--) {
+    if (t >= frames[i][0]) return frames[i][1];
+  }
+  return frames[0][1];
+};
+
+// ── small graphic primitives ────────────────────────────────────────────────
+
+// A flat tag pill, deck style.
+function Tag({ tone = 'muted', children, style }) {
+  const tones = {
+    muted:  { color: C.muted,  bg: C.surface, border: C.line },
+    ink:    { color: '#fff',   bg: C.ink,     border: C.ink },
+    green:  { color: C.green,  bg: C.green2,  border: C.green2 },
+    gold:   { color: C.gold,   bg: C.gold2,   border: C.gold2 },
+    risk:   { color: C.risk,   bg: C.risk2,   border: C.risk2 },
+    paper:  { color: C.ink,    bg: C.paper2,  border: C.line },
+  }[tone] || {};
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 8,
+      padding: '4px 12px',
+      fontSize: 14, fontWeight: 700,
+      letterSpacing: '0.10em', textTransform: 'uppercase',
+      color: tones.color, background: tones.bg,
+      border: `1px solid ${tones.border}`,
+      borderRadius: 999,
+      whiteSpace: 'nowrap',
+      ...style,
+    }}>{children}</span>
+  );
+}
+
+// A 14px square 'bullet'.
+function Sq({ color = C.ink, style }) {
+  return <span style={{ display: 'inline-block', width: 12, height: 12, background: color, flex: '0 0 12px', ...style }} />;
+}
+
+// A status icon for a step card.
+function StatusIcon({ kind, color }) {
+  const sz = 22;
+  const stroke = 2.2;
+  const common = { width: sz, height: sz, viewBox: '0 0 24 24', fill: 'none' };
+  if (kind === 'done') {
+    return (
+      <svg {...common}>
+        <rect x="1.5" y="1.5" width="21" height="21" fill={color}/>
+        <path d="M6 12.5L10.5 17L18 8" stroke="#fff" strokeWidth={stroke} strokeLinecap="square"/>
+      </svg>
+    );
+  }
+  if (kind === 'wait') {
+    return (
+      <svg {...common}>
+        <rect x="1.5" y="1.5" width="21" height="21" fill={color}/>
+        <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth={stroke} strokeLinecap="square" opacity="0"/>
+        <circle cx="12" cy="12" r="6" stroke="#fff" strokeWidth={stroke}/>
+        <path d="M12 8v4l3 2" stroke="#fff" strokeWidth={stroke} strokeLinecap="square"/>
+      </svg>
+    );
+  }
+  if (kind === 'flag') {
+    return (
+      <svg {...common}>
+        <rect x="1.5" y="1.5" width="21" height="21" fill={color}/>
+        <path d="M12 6v8M12 17v1.5" stroke="#fff" strokeWidth={stroke} strokeLinecap="square"/>
+      </svg>
+    );
+  }
+  if (kind === 'lost') {
+    return (
+      <svg {...common}>
+        <rect x="1.5" y="1.5" width="21" height="21" fill={color}/>
+        <path d="M7 7L17 17M17 7L7 17" stroke="#fff" strokeWidth={stroke} strokeLinecap="square"/>
+      </svg>
+    );
+  }
+  // pending
+  return (
+    <svg {...common}>
+      <rect x="2" y="2" width="20" height="20" stroke={C.line} strokeWidth="1.5" fill={C.surface}/>
+    </svg>
+  );
+}
+
+// ── animated number ─────────────────────────────────────────────────────────
+function CountUp({ from = 0, to = 100, start, end, decimals = 0,
+                   prefix = '', suffix = '',
+                   style, ease = Easing.easeOutCubic }) {
+  const t = useTime();
+  const p = clamp((t - start) / (end - start), 0, 1);
+  const v = from + (to - from) * ease(p);
+  const txt = v.toFixed(decimals);
+  return (
+    <span style={{
+      fontVariantNumeric: 'tabular-nums',
+      fontFeatureSettings: '"tnum" 1',
+      ...style,
+    }}>
+      {prefix}{txt}{suffix}
+    </span>
+  );
+}
+
+// ── Step card (used by both lanes) ──────────────────────────────────────────
+// A row showing one stage. Three states:
+//   pending  → low-key outline
+//   active   → entry animation (fade + slide), filled background
+//   stale    → only on traditional lane, after activation the card sits
+//              with a 'waiting' breathing border to imply time passing
+//
+// Props:
+//   stage  : { label, desc }
+//   agent  : 'Scout' or 'BD inbox'
+//   clock  : '09:14' or 'Day 9'
+//   msg    : body line
+//   t      : activation time
+//   tone   : 'os' | 'slow' | 'wait' | 'flag' | 'lost'
+function StepCard({
+  index, stage, agent, clock, msg, t, tone = 'os',
+  width = 880, height = 76, y = 0, lane = 'os',
+}) {
+  const time = useTime();
+  const active = time >= t;
+  const sinceActive = Math.max(0, time - t);
+
+  // entry sequence: 0.35s scale-in
+  const entry = active ? fadeIn(time, t, 0.45) : 0;
+  const slide = active ? (1 - entry) * 12 : 12;
+
+  // For traditional lane, after the step appears we let time visibly pass —
+  // the card stays 'open' until the next step starts. We pulse a subtle line
+  // to feel like an ongoing wait.
+  const palette = {
+    os:   { fill: C.green2, accent: C.green, icon: 'done',  iconColor: C.green },
+    slow: { fill: C.surface, accent: C.gold,  icon: 'wait', iconColor: C.gold },
+    wait: { fill: C.surface, accent: C.gold,  icon: 'wait', iconColor: C.gold },
+    flag: { fill: C.surface, accent: C.risk,  icon: 'flag', iconColor: C.risk },
+    lost: { fill: C.risk2,   accent: C.risk,  icon: 'lost', iconColor: C.risk },
+  }[tone];
+
+  const pendingOpacity = active ? 1 : 0.5;
+  const cardBg = active ? palette.fill : C.surface;
+  const borderCol = active ? palette.accent : C.line;
+  const accentBarW = active ? entry * 6 : 0;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: 0, top: y, width, height,
+      transform: `translateY(${slide}px)`,
+      opacity: active ? entry : pendingOpacity,
+      transition: 'none',
+    }}>
+      {/* connecting tick line on left edge */}
+      {index > 0 && (
+        <div style={{
+          position: 'absolute',
+          left: 16, top: -10, width: 1, height: 10,
+          background: active ? palette.accent : C.line,
+          opacity: 0.7,
+        }} />
+      )}
+
+      <div style={{
+        position: 'relative',
+        width: '100%', height: '100%',
+        background: cardBg,
+        border: `1px solid ${borderCol}`,
+        boxSizing: 'border-box',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 22px 0 16px',
+        gap: 18,
+      }}>
+        {/* left accent bar — fills as the step activates */}
+        <div style={{
+          position: 'absolute',
+          left: 0, top: 0, bottom: 0,
+          width: accentBarW,
+          background: palette.accent,
+          transition: 'none',
+        }} />
+
+        {/* index */}
+        <div style={{
+          width: 30, textAlign: 'right',
+          fontSize: 13, fontWeight: 800, letterSpacing: '0.14em',
+          color: C.muted2, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          marginLeft: 4,
+        }}>{String(index + 1).padStart(2, '0')}</div>
+
+        {/* status icon */}
+        <div style={{ flex: '0 0 22px' }}>
+          <StatusIcon kind={active ? palette.icon : 'pending'} color={palette.iconColor} />
+        </div>
+
+        {/* stage label + agent */}
+        <div style={{ width: 220, flex: '0 0 220px' }}>
+          <div style={{
+            fontSize: 13, fontWeight: 800, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: C.muted, lineHeight: 1,
+          }}>
+            {stage.label}
+          </div>
+          <div style={{
+            fontSize: 19, fontWeight: 700, color: C.ink,
+            marginTop: 6, letterSpacing: '-0.005em',
+            lineHeight: 1.1,
+          }}>{agent}</div>
+        </div>
+
+        {/* msg */}
+        <div style={{
+          flex: 1,
+          fontSize: 16,
+          fontWeight: 500,
+          color: active ? C.ink2 : C.muted2,
+          lineHeight: 1.32,
+          paddingRight: 8,
+        }}>{msg}</div>
+
+        {/* clock chip */}
+        <div style={{
+          flex: '0 0 auto',
+          background: active ? (lane === 'os' ? C.dark : C.ink) : C.paper2,
+          color: active ? '#fff' : C.muted,
+          padding: '6px 12px',
+          fontSize: 13, fontWeight: 800,
+          letterSpacing: '0.1em', textTransform: 'uppercase',
+          fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          minWidth: 78, textAlign: 'center',
+        }}>{clock}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── A live "waiting" indicator that fades in between trad steps ─────────────
+function WaitingDot({ x, y, color = C.muted2, label = 'waiting…' }) {
+  const t = useTime();
+  // gentle 1.6s sine breathing
+  const pulse = 0.6 + 0.4 * (0.5 + 0.5 * Math.sin(t * 4.0));
+  return (
+    <div style={{
+      position: 'absolute', left: x, top: y,
+      display: 'flex', alignItems: 'center', gap: 8,
+      fontSize: 12, fontWeight: 700, color,
+      letterSpacing: '0.16em', textTransform: 'uppercase',
+      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      whiteSpace: 'nowrap',
+    }}>
+      <span style={{
+        display: 'inline-block',
+        width: 8, height: 8, borderRadius: 4,
+        background: color, opacity: pulse,
+      }} />
+      {label}
+    </div>
+  );
+}
+
+// ── Lane header (top of each column) ────────────────────────────────────────
+function LaneHeader({ kind, title, sub, clock, accent }) {
+  const isOS = kind === 'os';
+  return (
+    <div style={{
+      position: 'absolute', left: 0, top: 0, width: '100%', height: 116,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 18 }}>
+        <Sq color={accent} style={{ width: 20, height: 20, marginBottom: 12 }} />
+        <div style={{
+          fontSize: 14, fontWeight: 800, letterSpacing: '0.20em',
+          textTransform: 'uppercase', color: C.muted, marginBottom: 14,
+        }}>{title}</div>
+        <div style={{
+          fontSize: 14, fontWeight: 600, color: accent,
+          letterSpacing: '0.04em',
+          marginBottom: 14,
+          textTransform: 'none',
+        }}>{sub}</div>
+      </div>
+
+      <div style={{
+        display: 'flex', alignItems: 'baseline', gap: 22,
+        marginTop: 8,
+      }}>
+        <div style={{
+          fontSize: 84, fontWeight: 800, color: isOS ? C.green : C.ink,
+          letterSpacing: '-0.03em', lineHeight: 1,
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontVariantNumeric: 'tabular-nums',
+        }}>{clock.big}</div>
+        <div style={{
+          fontSize: 22, fontWeight: 600, color: C.muted2,
+          lineHeight: 1.2, maxWidth: 320,
+        }}>{clock.sub}</div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, {
+  C, fadeIn, fadeOut, stepValueAt,
+  Tag, Sq, StatusIcon, CountUp,
+  StepCard, WaitingDot, LaneHeader,
+});
+
+// ── CompareROIStrip ────────────────────────────────────────────────────────
+// Dual-side ROI scoreboard at the bottom of the canvas. For each metric,
+// shows Path A and Path B's value side by side; both tick live with time.
+// Mounted continuously from the start of the lanes so the user can watch
+// the gap open up as the scroll/playhead advances.
+
+function CompareROIStrip({ y, height = 276 }) {
+  const t = window.useTime();
+  const rise = fadeIn(t, window.BEATS.laneStart - 0.4, 0.6, Easing.easeOutCubic);
+  if (rise <= 0.001) return null;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: 0, top: y,
+      width: '100%', height,
+      background: C.dark, color: '#fff',
+      opacity: rise,
+      transform: `translateY(${(1 - rise) * 30}px)`,
+    }}>
+      <div style={{
+        height: '100%',
+        padding: '22px 56px 20px',
+        display: 'flex', gap: 20,
+        boxSizing: 'border-box',
+      }}>
+        {window.COMPARE_METRICS.map((m, i) => (
+          <CompareCard
+            key={m.key} metric={m} index={i}
+            time={t}
+            isLast={i === window.COMPARE_METRICS.length - 1}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CompareCard({ metric, index, time, isLast }) {
+  const start = window.BEATS.laneStart - 0.2 + index * 0.18;
+  const op = clamp(fadeIn(time, start, 0.5), 0, 1);
+
+  const aValue = metric.isText
+    ? window.evalFramesText(time, metric.a.frames)
+    : window.evalFramesNum(time, metric.a.frames);
+  const bValue = metric.isText
+    ? window.evalFramesText(time, metric.b.frames)
+    : window.evalFramesNum(time, metric.b.frames);
+
+  const aNote = metric.a.noteFn ? metric.a.noteFn(aValue) : '';
+  const bNote = metric.b.noteFn ? metric.b.noteFn(bValue) : '';
+
+  return (
+    <div style={{
+      flex: 1, minWidth: 0,
+      display: 'flex', flexDirection: 'column',
+      gap: 8,
+      opacity: op,
+      transform: `translateY(${(1 - op) * 12}px)`,
+      paddingRight: isLast ? 0 : 20,
+      borderRight: isLast ? 'none' : '1px solid rgba(255,255,255,0.10)',
+    }}>
+      <div style={{
+        fontSize: 13, fontWeight: 800, letterSpacing: '0.18em',
+        textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)',
+        lineHeight: 1.2,
+      }}>{metric.label}</div>
+
+      <PathRow
+        path="A" color={C.risk}
+        value={aValue} decimals={metric.a.decimals}
+        isText={metric.isText} suffix={metric.suffix}
+        note={aNote}
+      />
+      <PathRow
+        path="B" color="#6dd0b9"
+        value={bValue} decimals={metric.b.decimals}
+        isText={metric.isText} suffix={metric.suffix}
+        note={bNote}
+        pulse={metric.b.pulse}
+      />
+
+      <div style={{
+        fontSize: 12, fontWeight: 500,
+        color: 'rgba(255,255,255,0.55)', lineHeight: 1.35,
+        marginTop: 2,
+        textWrap: 'pretty',
+      }}>{metric.sub}</div>
+    </div>
+  );
+}
+
+function PathRow({ path, color, value, decimals, isText, suffix, note, pulse }) {
+  const display = isText
+    ? value
+    : `${Number(value).toFixed(decimals)}${suffix || ''}`;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+      {/* Path badge */}
+      <div style={{
+        flex: '0 0 auto',
+        display: 'inline-flex', alignItems: 'center',
+        gap: 6,
+        padding: '4px 8px',
+        background: `${color}22`,
+        color,
+        fontSize: 10, fontWeight: 800, letterSpacing: '0.20em',
+        textTransform: 'uppercase',
+        height: 22,
+        marginTop: 14,
+      }}>
+        <span style={{
+          width: 7, height: 7, background: color,
+          display: 'inline-block',
+        }} />
+        Path {path}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: 44, fontWeight: 800,
+          letterSpacing: '-0.03em', lineHeight: 1.0,
+          color: '#fff', fontVariantNumeric: 'tabular-nums',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {pulse ? <PulseText color={color} text={display} /> : display}
+        </div>
+        <div style={{
+          fontSize: 12, fontWeight: 500,
+          color: 'rgba(255,255,255,0.58)',
+          marginTop: 4, lineHeight: 1.25,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{note}</div>
+      </div>
+    </div>
+  );
+}
+
+function PulseText({ color, text }) {
+  const t = window.useTime();
+  const pulse = 0.78 + 0.22 * (0.5 + 0.5 * Math.sin(t * 4.2));
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+      <span style={{
+        display: 'inline-block', width: 14, height: 14, borderRadius: 7,
+        background: color, opacity: pulse,
+        boxShadow: `0 0 22px ${color}`,
+      }} />
+      {text}
+    </span>
+  );
+}
+
+Object.assign(window, { CompareROIStrip, CompareCard, PathRow, PulseText });
+
+  </script>
+
+  <!-- scroll-app.jsx (inlined) -->
+  <script type="text/babel" data-presets="env,react">
+// scroll-app.jsx — scroll-driven version of the Two Paths animation.
+// Reuses compare-data + compare-components, but provides time from scroll
+// position instead of an autoplay loop.
+
+const {
+  TimelineContext, Easing, clamp,
+  C, fadeIn, fadeOut,
+  Tag, Sq, StatusIcon, CountUp,
+  StepCard, WaitingDot, LaneHeader,
+  CompareROIStrip,
+  DURATION, BEATS, STAGES, OS_STEPS, TRAD_STEPS, COMPARE_METRICS,
+} = window;
+
+const CANVAS_W = 1920;
+const CANVAS_H = 1080;
+
+// ── Scroll-driven canvas ───────────────────────────────────────────────────
+function ScrollCanvas({ time, duration, children }) {
+  const ref = React.useRef(null);
+  const [scale, setScale] = React.useState(1);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const s = Math.min(
+        el.clientWidth / CANVAS_W,
+        el.clientHeight / CANVAS_H,
+      );
+      setScale(Math.max(0.05, s));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
+  }, []);
+
+  const ctx = React.useMemo(() => ({ time, duration, playing: false }), [time, duration]);
+
+  return (
+    <div ref={ref} style={{
+      position: 'absolute', inset: 0,
+      display: 'grid', placeItems: 'center',
+      background: '#0a0d12',
+      overflow: 'hidden',
+    }}>
+      {/* Outer box takes the SCALED footprint, so grid centering works
+          correctly even when the viewport is narrower than CANVAS_W. */}
+      <div style={{
+        width: CANVAS_W * scale,
+        height: CANVAS_H * scale,
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 30px 80px rgba(0,0,0,0.45)',
+      }}>
+        <div style={{
+          width: CANVAS_W, height: CANVAS_H,
+          background: C.paper,
+          position: 'absolute', left: 0, top: 0,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+        }}>
+          <TimelineContext.Provider value={ctx}>
+            {children}
+          </TimelineContext.Provider>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Lane / scene composition (same as Stage version) ──────────────────────
+// We need our own copies of the lane components that reference window.* exports
+// already attached by compare-components and compare-app. To avoid loading
+// compare-app's auto-render, we redefine the scene composition here.
+
+const G = {
+  W: 1920, H: 1080,
+  headerH: 96,
+  laneTop: 124,
+  laneH: 636,
+  laneW: 880,
+  laneGap: 20,
+  laneLeftX: 60,
+  laneRightX: 60 + 880 + 20,
+  roiTop: 780,
+  roiH: 276,
+  stepStartY: 156,
+  stepH: 70,
+  stepGap: 14,
+};
+
+function HeaderBar({ chapter }) {
+  return (
+    <div style={{
+      position: 'absolute', left: 0, top: 0,
+      width: '100%', height: G.headerH,
+      background: C.surface,
+      borderBottom: `1px solid ${C.line}`,
+      display: 'flex', alignItems: 'center',
+      padding: '0 60px',
+    }}>
+      <div style={{
+        display: 'inline-grid', placeItems: 'center',
+        width: 46, height: 46, border: `2px solid ${C.ink}`,
+        fontSize: 18, fontWeight: 900, letterSpacing: '0.02em',
+        marginRight: 22,
+      }}>LX</div>
+      <div style={{
+        fontSize: 14, fontWeight: 800, letterSpacing: '0.20em',
+        textTransform: 'uppercase', color: C.muted,
+      }}>
+        Level Intelligence OS &nbsp;·&nbsp; scroll to compare
+      </div>
+      <div style={{ flex: 1 }} />
+      <div style={{
+        fontSize: 30, fontWeight: 800,
+        letterSpacing: '-0.018em',
+        color: C.ink, textAlign: 'center',
+      }}>
+        Same opportunity. <span style={{ color: C.muted }}>Two paths.</span>
+      </div>
+      <div style={{ flex: 1 }} />
+      <Tag tone="ink" style={{ fontSize: 13 }}>
+        <span style={{
+          display: 'inline-block', width: 8, height: 8,
+          borderRadius: 4, background: '#6dd0b9',
+        }} />
+        {chapter || 'Scroll to advance'}
+      </Tag>
+    </div>
+  );
+}
+
+function Divider() {
+  return (
+    <div style={{
+      position: 'absolute',
+      left: G.laneLeftX + G.laneW + G.laneGap / 2 - 0.5,
+      top: G.laneTop, bottom: 1080 - (G.roiTop - 8),
+      width: 1, background: C.line,
+    }} />
+  );
+}
+
+function TraditionalLane({ time }) {
+  const t = time;
+  const dayKeys = [
+    [BEATS.laneStart, 1],
+    ...TRAD_STEPS.map(s => [s.t, s.dayN]),
+    [BEATS.tradLaneEnd + 2, TRAD_STEPS[TRAD_STEPS.length - 1].dayN],
+  ];
+  const day = window.interpolate(
+    dayKeys.map(k => k[0]),
+    dayKeys.map(k => k[1]),
+    Easing.linear,
+  )(t);
+  const dayInt = Math.floor(day);
+
+  const lostT = TRAD_STEPS[TRAD_STEPS.length - 1].t;
+  let sub = 'Carried in inboxes · spreadsheets · memory';
+  if (t > 17) sub = 'Time bleeds between handoffs';
+  if (t > lostT) sub = 'Deadline missed · opportunity lost';
+
+  let activeIdx = -1;
+  TRAD_STEPS.forEach((s, i) => { if (t >= s.t) activeIdx = i; });
+  const nextStep = TRAD_STEPS[activeIdx + 1];
+  const showWaiting =
+    activeIdx >= 0 && activeIdx < TRAD_STEPS.length - 1 &&
+    nextStep && t > TRAD_STEPS[activeIdx].t + 1.2 &&
+    t < nextStep.t - 0.3;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: G.laneLeftX, top: G.laneTop,
+      width: G.laneW, height: G.laneH,
+    }}>
+      <LaneHeader
+        kind="trad"
+        title="Path A · Traditional ops"
+        sub="manual handoffs"
+        accent={C.risk}
+        clock={{ big: `Day ${dayInt}`, sub }}
+      />
+      <div style={{ position: 'absolute', left: 0, top: G.stepStartY, width: '100%', height: 460 }}>
+        {TRAD_STEPS.map((s, i) => {
+          const stage = STAGES.find(x => x.key === s.stage);
+          const tone =
+            s.status === 'lost' ? 'lost' :
+            s.status === 'flag' ? 'flag' :
+            s.status === 'wait' ? 'wait' : 'slow';
+          return (
+            <StepCard
+              key={i} index={i} lane="trad"
+              stage={stage}
+              agent={s.who}
+              clock={s.day}
+              msg={s.msg}
+              t={s.t}
+              tone={tone}
+              width={G.laneW} height={G.stepH}
+              y={i * (G.stepH + G.stepGap)}
+            />
+          );
+        })}
+        {showWaiting && (
+          <WaitingDot
+            x={G.laneW - 168}
+            y={activeIdx * (G.stepH + G.stepGap) + G.stepH + 2}
+            color={C.muted2}
+            label="waiting · idle"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OSLane({ time }) {
+  const t = time;
+  let clock = '09:14';
+  OS_STEPS.forEach((s) => { if (t >= s.t) { clock = s.clock; } });
+
+  let sub = 'Agents orchestrate · one context layer';
+  if (t > BEATS.osLaneEnd) sub = 'All six stages complete · same morning';
+  if (t > 30) sub = 'Standing watch · compounding context';
+
+  const deliveredT = OS_STEPS[OS_STEPS.length - 1].t + 0.5;
+  const showDelivered = t >= deliveredT;
+  const dOpacity = showDelivered ? fadeIn(t, deliveredT, 0.5) : 0;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: G.laneRightX, top: G.laneTop,
+      width: G.laneW, height: G.laneH,
+    }}>
+      <LaneHeader
+        kind="os"
+        title="Path B · Level Intelligence OS"
+        sub="agentic"
+        accent={C.green}
+        clock={{ big: clock, sub }}
+      />
+      <div style={{
+        position: 'absolute', top: 36, right: 0,
+        opacity: dOpacity,
+        transform: `translateY(${(1 - dOpacity) * 8}px)`,
+      }}>
+        <div style={{
+          background: C.green, color: '#fff',
+          padding: '10px 18px',
+          fontSize: 14, fontWeight: 800,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          display: 'flex', alignItems: 'center', gap: 10,
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{
+            display: 'inline-block', width: 9, height: 9,
+            borderRadius: 5, background: '#fff',
+          }} />
+          Delivered · 6 min total
+        </div>
+      </div>
+      <div style={{ position: 'absolute', left: 0, top: G.stepStartY, width: '100%', height: 460 }}>
+        {OS_STEPS.map((s, i) => {
+          const stage = STAGES.find(x => x.key === s.stage);
+          return (
+            <StepCard
+              key={i} index={i} lane="os"
+              stage={stage}
+              agent={s.agent}
+              clock={s.clock}
+              msg={s.msg}
+              t={s.t}
+              tone="os"
+              width={G.laneW} height={G.stepH}
+              y={i * (G.stepH + G.stepGap)}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ROIStripLocal_REMOVED() { return null; }
+// NOTE: dual-side ROI strip lives in compare-components.jsx (CompareROIStrip)
+// and is rendered directly inside ScrollCanvas below.
+
+function OutroOverlay({ time }) {
+  const t = time;
+  const op = fadeIn(t, BEATS.summaryStart, 0.8);
+  if (op <= 0.001) return null;
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: `rgba(23,32,43,${0.82 * op})`,
+      backdropFilter: 'blur(3px)',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        position: 'absolute', left: '50%', top: '50%',
+        transform: `translate(-50%, ${-50 + (1 - op) * 6}%)`,
+        opacity: op, textAlign: 'center', color: '#fff',
+        width: 1280,
+      }}>
+        <div style={{
+          fontSize: 14, fontWeight: 800,
+          letterSpacing: '0.24em', textTransform: 'uppercase',
+          color: '#6dd0b9', marginBottom: 22,
+        }}>The bottom line</div>
+        <div style={{
+          fontSize: 96, fontWeight: 800,
+          letterSpacing: '-0.03em', lineHeight: 0.96,
+        }}>31 days collapses<br/>into a single morning.</div>
+        <div style={{
+          marginTop: 38,
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 28, padding: '0 80px',
+        }}>
+          <OutroStat label="Less human labor wasted" value="~96%" sub="Hours, not days, per pursuit"/>
+          <OutroStat label="Signals never dropped" value="0" sub="Everything routed to context"/>
+          <OutroStat label="Executive line of sight" value="Live" sub="Proactive, on-demand, deep"/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OutroStat({ label, value, sub }) {
+  return (
+    <div style={{
+      borderTop: '1px solid rgba(255,255,255,0.18)',
+      paddingTop: 22, textAlign: 'left',
+    }}>
+      <div style={{
+        fontSize: 13, fontWeight: 800, letterSpacing: '0.18em',
+        textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)',
+      }}>{label}</div>
+      <div style={{
+        fontSize: 64, fontWeight: 800,
+        letterSpacing: '-0.03em', lineHeight: 1,
+        marginTop: 12,
+      }}>{value}</div>
+      <div style={{
+        fontSize: 16, fontWeight: 500,
+        color: 'rgba(255,255,255,0.7)', marginTop: 12,
+        lineHeight: 1.32,
+      }}>{sub}</div>
+    </div>
+  );
+}
+
+function BackgroundDeco() {
+  return (
+    <div style={{
+      position: 'absolute',
+      left: 0, top: G.headerH,
+      width: '100%', height: G.roiTop - G.headerH,
+      background: `linear-gradient(to bottom, ${C.paper} 0%, ${C.paper2} 100%)`,
+    }} />
+  );
+}
+
+// ── Chapters ───────────────────────────────────────────────────────────────
+const CHAPTERS = [
+  { t: 0.0,  title: 'Setup',                  short: 'Setup' },
+  { t: 3.2,  title: 'A new permit surfaces',  short: 'Signal' },
+  { t: 8.0,  title: 'Level OS routes it',      short: 'Route' },
+  { t: 13.5, title: 'Decision in 6 minutes',  short: 'Decision' },
+  { t: 16.0, title: 'ROI starts compounding', short: 'ROI' },
+  { t: 30.0, title: 'Path A still stuck',     short: 'Stuck' },
+  { t: 44.5, title: 'Opportunity lost',       short: 'Lost' },
+  { t: 48.5, title: 'The bottom line',        short: 'Bottom line' },
+];
+
+function currentChapter(t) {
+  let c = CHAPTERS[0];
+  CHAPTERS.forEach(ch => { if (t >= ch.t) c = ch; });
+  return c;
+}
+
+// ── Site root ──────────────────────────────────────────────────────────────
+// Layout:
+//   [Hero · 90vh]
+//   [Pinned section · 700vh — sticky canvas at top]
+//   [Outro section · 80vh — CTA]
+
+const PIN_VH = 700;  // % of viewport for the pinned scroll region
+
+function Site() {
+  const pinRef = React.useRef(null);
+  const [scrollT, setScrollT] = React.useState(0);
+  const [pinActive, setPinActive] = React.useState(false);
+
+  React.useEffect(() => {
+    const update = () => {
+      const el = pinRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const total = el.offsetHeight - window.innerHeight;
+      const scrolled = -rect.top;
+      const p = clamp(scrolled / total, 0, 1);
+      setScrollT(p * DURATION);
+      setPinActive(rect.top <= 0 && rect.bottom >= window.innerHeight);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
+  const ch = currentChapter(scrollT);
+
+  return (
+    <div style={{
+      background: C.paper, color: C.ink,
+      fontFamily: 'Inter, system-ui, sans-serif',
+      minHeight: '100vh',
+    }}>
+      <SiteHeader />
+      <Hero />
+      <div ref={pinRef} style={{ position: 'relative', height: `${PIN_VH}vh` }}>
+        <div style={{
+          position: 'sticky', top: 0,
+          height: '100vh', width: '100%',
+          overflow: 'hidden',
+        }}>
+          <ScrollCanvas time={scrollT} duration={DURATION}>
+            <BackgroundDeco />
+            <HeaderBar chapter={ch.short} />
+            <Divider />
+            <TraditionalLane time={scrollT} />
+            <OSLane time={scrollT} />
+            <CompareROIStrip y={G.roiTop} height={G.roiH} />
+            <OutroOverlay time={scrollT} />
+          </ScrollCanvas>
+          <ProgressRail t={scrollT} active={pinActive} />
+          <ChapterCaption ch={ch} active={pinActive} />
+          <ScrollHint visible={scrollT < 1.5} />
+        </div>
+      </div>
+      <OutroSection />
+      <SiteFooter />
+    </div>
+  );
+}
+
+// ── Site chrome ────────────────────────────────────────────────────────────
+function SiteHeader() {
+  return (
+    <header style={{
+      position: 'sticky', top: 0, zIndex: 5,
+      background: 'rgba(246,247,244,0.86)',
+      backdropFilter: 'blur(10px)',
+      borderBottom: `1px solid ${C.line}`,
+      display: 'flex', alignItems: 'center',
+      padding: '14px 32px', gap: 14,
+    }}>
+      <div style={{
+        display: 'inline-grid', placeItems: 'center',
+        width: 32, height: 32, border: `2px solid ${C.ink}`,
+        fontSize: 14, fontWeight: 900,
+      }}>LX</div>
+      <div style={{
+        fontSize: 14, fontWeight: 700,
+        letterSpacing: '0.16em', textTransform: 'uppercase',
+        color: C.ink,
+      }}>Level Intelligence OS</div>
+      <div style={{
+        marginLeft: 6, fontSize: 14, color: C.muted, fontWeight: 500,
+      }}>· Client walk-through</div>
+      <div style={{ flex: 1 }} />
+      <a href="#cta" style={{
+        fontSize: 13, fontWeight: 700,
+        letterSpacing: '0.14em', textTransform: 'uppercase',
+        color: C.ink, textDecoration: 'none',
+        padding: '8px 14px', border: `1.5px solid ${C.ink}`,
+      }}>Book walkthrough →</a>
+    </header>
+  );
+}
+
+function Hero() {
+  return (
+    <section style={{
+      padding: '120px 56px 80px',
+      maxWidth: 1640, margin: '0 auto',
+    }}>
+      <div style={{
+        fontSize: 16, fontWeight: 700,
+        letterSpacing: '0.20em', textTransform: 'uppercase',
+        color: C.green, marginBottom: 32,
+      }}>What sixty seconds buys you</div>
+      <h1 style={{
+        fontSize: 'clamp(64px, 7vw, 132px)',
+        fontWeight: 800,
+        letterSpacing: '-0.028em',
+        lineHeight: 0.95, margin: 0,
+        maxWidth: '14ch',
+      }}>
+        Two paths.<br/>
+        <span style={{ color: C.muted }}>The same morning.</span>
+      </h1>
+      <div style={{
+        marginTop: 44,
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
+        gap: 64, alignItems: 'flex-start',
+      }}>
+        <p style={{
+          fontSize: 'clamp(20px, 1.5vw, 28px)',
+          lineHeight: 1.4, color: C.ink2, margin: 0,
+          textWrap: 'pretty',
+          maxWidth: '38ch',
+        }}>
+          A new permit lands for Cedar Park HGI. On one path it sits in inboxes
+          for thirty-one days and the deadline passes. On the other, Level
+          Intelligence OS routes it through six agents and queues an approval
+          before the morning meeting.
+        </p>
+        <ul style={{
+          listStyle: 'none', margin: 0, padding: 0,
+          display: 'grid', gap: 12,
+          fontSize: 16, color: C.muted, fontWeight: 500,
+        }}>
+          <li>↓ Scroll to advance the timeline</li>
+          <li>↓ Each scroll-tick moves the day clock</li>
+          <li>↓ ROI compounds as agents finish</li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function OutroSection() {
+  return (
+    <section id="cta" style={{
+      padding: '120px 56px 100px',
+      maxWidth: 1640, margin: '0 auto',
+    }}>
+      <div style={{
+        fontSize: 16, fontWeight: 700,
+        letterSpacing: '0.20em', textTransform: 'uppercase',
+        color: C.green, marginBottom: 24,
+      }}>Ready to see your version?</div>
+      <h2 style={{
+        fontSize: 'clamp(48px, 5vw, 96px)',
+        fontWeight: 800, letterSpacing: '-0.025em',
+        lineHeight: 1.0, margin: 0,
+        maxWidth: '18ch',
+      }}>
+        Your team, on Path B — by next quarter.
+      </h2>
+      <div style={{
+        marginTop: 44,
+        display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center',
+      }}>
+        <a href="#" style={{
+          fontSize: 16, fontWeight: 700,
+          letterSpacing: '0.14em', textTransform: 'uppercase',
+          color: '#fff', background: C.ink,
+          padding: '18px 26px', textDecoration: 'none',
+        }}>Book a walkthrough →</a>
+        <a href="Level Intelligence OS - Two Paths Animation.html" style={{
+          fontSize: 16, fontWeight: 700,
+          letterSpacing: '0.14em', textTransform: 'uppercase',
+          color: C.ink, padding: '18px 26px',
+          textDecoration: 'none',
+          border: `1.5px solid ${C.ink}`,
+        }}>Watch the auto-play version</a>
+      </div>
+      <p style={{
+        marginTop: 56, fontSize: 18, lineHeight: 1.5,
+        color: C.muted, maxWidth: '60ch',
+      }}>
+        Built on the agentic system you saw above — Scout, Permit, Memory,
+        Qualifier, Bid and Brief — running on top of one operating context for
+        Level. Compounds every hour, owned by you, surfaced proactively to the
+        exec team.
+      </p>
+    </section>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer style={{
+      borderTop: `1px solid ${C.line}`,
+      padding: '32px 56px',
+      display: 'flex', gap: 24, alignItems: 'center',
+      fontSize: 13, color: C.muted2, fontWeight: 500,
+      letterSpacing: '0.06em',
+    }}>
+      <div>Level Intelligence OS · Draft for client review</div>
+      <div style={{ flex: 1 }} />
+      <div>© 2026 · Confidential</div>
+    </footer>
+  );
+}
+
+// ── Scroll-progress side rail w/ chapter ticks ─────────────────────────────
+function ProgressRail({ t, active }) {
+  const pct = clamp(t / DURATION, 0, 1);
+  return (
+    <div style={{
+      position: 'absolute',
+      right: 28, top: '50%',
+      transform: 'translateY(-50%)',
+      height: 380, width: 6,
+      opacity: active ? 1 : 0.5,
+      transition: 'opacity 240ms',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(255,255,255,0.14)',
+      }} />
+      <div style={{
+        position: 'absolute', left: 0, top: 0, width: '100%',
+        height: `${pct * 100}%`,
+        background: '#6dd0b9',
+        transition: 'height 80ms linear',
+      }} />
+      {CHAPTERS.map((c, i) => {
+        const y = (c.t / DURATION) * 100;
+        const reached = t >= c.t;
+        return (
+          <div key={i} style={{
+            position: 'absolute',
+            left: -6, top: `${y}%`,
+            width: 18, height: 2,
+            background: reached ? '#6dd0b9' : 'rgba(255,255,255,0.5)',
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
+function ChapterCaption({ ch, active }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      left: 28, bottom: 28,
+      maxWidth: 380,
+      opacity: active ? 1 : 0,
+      transition: 'opacity 240ms',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        fontSize: 11, fontWeight: 800,
+        letterSpacing: '0.22em', textTransform: 'uppercase',
+        color: 'rgba(255,255,255,0.55)',
+        fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      }}>Chapter</div>
+      <div style={{
+        fontSize: 22, fontWeight: 700,
+        color: '#fff', marginTop: 6,
+        letterSpacing: '-0.01em',
+        textShadow: '0 4px 18px rgba(0,0,0,0.6)',
+      }}>{ch.title}</div>
+    </div>
+  );
+}
+
+function ScrollHint({ visible }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      left: '50%', bottom: 36,
+      transform: 'translateX(-50%)',
+      opacity: visible ? 1 : 0,
+      transition: 'opacity 300ms',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', gap: 12,
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        fontSize: 12, fontWeight: 800,
+        letterSpacing: '0.24em', textTransform: 'uppercase',
+        color: 'rgba(255,255,255,0.85)',
+        fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+        background: 'rgba(0,0,0,0.6)',
+        padding: '8px 14px',
+      }}>Scroll to advance ↓</div>
+    </div>
+  );
+}
+
+// ── render ─────────────────────────────────────────────────────────────────
+ReactDOM.createRoot(document.getElementById('root')).render(<Site />);
+
+  </script>
+</body>
+</html>

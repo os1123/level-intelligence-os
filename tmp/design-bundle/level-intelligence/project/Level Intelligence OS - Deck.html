@@ -1,0 +1,1438 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Level Intelligence OS — Deck</title>
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Newsreader:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <script src="deck-stage.js"></script>
+  <style>
+    :root {
+      --ink: #11161d;
+      --ink-2: #2a323c;
+      --muted: #626d78;
+      --muted-2: #8a96a2;
+      --line: #d8dde3;
+      --line-2: #ebeef2;
+      --paper: #f6f7f4;
+      --paper-2: #efefe9;
+      --surface: #ffffff;
+      --accent: #0d806c;
+      --accent-2: #e2f2ee;
+      --gold: #bd8427;
+      --gold-2: #f5e9d2;
+      --blue: #4269d6;
+      --blue-2: #e2eaf6;
+      --purple: #8b5ac2;
+      --dark: #17202b;
+      --dark-2: #243040;
+      --risk: #b84a4a;
+      --risk-2: #f6dede;
+
+      --type-hero: 168px;
+      --type-title: 84px;
+      --type-section: 64px;
+      --type-h2: 48px;
+      --type-subtitle: 34px;
+      --type-body: 26px;
+      --type-small: 24px;
+
+      --pad-x: 112px;
+      --pad-y: 84px;
+    }
+
+    html, body { margin: 0; padding: 0; background: #000; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; color: var(--ink); }
+
+    deck-stage > section {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      overflow: hidden;
+    }
+    deck-stage > section.dark { background: var(--dark); color: #fff; }
+
+    .frame {
+      width: 100%;
+      height: 100%;
+      padding: var(--pad-y) var(--pad-x);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .frame.tight { padding: 48px var(--pad-x) 40px; }
+
+    /* slide meta strip (top): eyebrow on left, slide num on right */
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .dark .meta { color: rgba(255,255,255,0.55); }
+    .meta .accent { color: var(--accent); }
+    .dark .meta .accent { color: #6dd0b9; }
+    .meta .num { font-feature-settings: "tnum" 1; letter-spacing: 0.18em; }
+
+    /* eyebrow + title block */
+    .title {
+      font-size: var(--type-title);
+      font-weight: 800;
+      line-height: 0.96;
+      letter-spacing: -0.022em;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: var(--type-subtitle);
+      font-weight: 400;
+      line-height: 1.28;
+      color: var(--muted);
+      margin: 0;
+      max-width: 32ch;
+      text-wrap: pretty;
+    }
+    .dark .subtitle { color: rgba(255,255,255,0.74); }
+
+    /* hairline rule */
+    .rule { height: 1px; background: var(--line); border: 0; margin: 0; }
+    .dark .rule { background: rgba(255,255,255,0.14); }
+
+    /* mock window */
+    .mock {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: 0 50px 80px -40px rgba(17,22,29,0.22), 0 2px 8px rgba(17,22,29,0.05);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      color: var(--ink);
+    }
+    .mock-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line-2);
+      background: var(--paper);
+      color: var(--muted);
+      font-size: 24px;
+    }
+    .mock-bar .dot { width: 12px; height: 12px; border-radius: 50%; background: #e0e3e7; }
+    .mock-bar .crumb { color: var(--ink); font-weight: 600; margin-left: 18px; }
+    .mock-bar .crumb i { color: var(--muted); font-style: normal; font-weight: 400; margin: 0 12px; }
+    .mock-bar .right { margin-left: auto; display: flex; gap: 18px; align-items: center; }
+    .mock-bar .pill { padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; font-size: 24px; color: var(--muted); }
+
+    /* sidebar nav inside mocks */
+    .side {
+      width: 220px;
+      flex: 0 0 220px;
+      background: var(--paper);
+      border-right: 1px solid var(--line-2);
+      padding: 24px 18px;
+      display: flex; flex-direction: column; gap: 4px;
+      font-size: 24px;
+    }
+    .side .group { font-size: 24px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2); margin: 18px 0 6px; padding-left: 12px; }
+    .side .group:first-child { margin-top: 0; }
+    .side a { padding: 10px 12px; color: var(--muted); border-radius: 4px; display: flex; gap: 12px; align-items: center; }
+    .side a.on { background: var(--ink); color: #fff; font-weight: 600; }
+    .side a .k { font-size: 24px; color: var(--muted-2); margin-left: auto; }
+    .side a.on .k { color: rgba(255,255,255,0.55); }
+
+    /* generic tag */
+    .tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 4px 12px;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 999px;
+      line-height: 1.4;
+    }
+    .tag.green { color: var(--accent); border-color: var(--accent-2); background: var(--accent-2); }
+    .tag.gold { color: var(--gold); border-color: var(--gold-2); background: var(--gold-2); }
+    .tag.blue { color: var(--blue); border-color: var(--blue-2); background: var(--blue-2); }
+    .tag.risk { color: var(--risk); border-color: var(--risk-2); background: var(--risk-2); }
+    .tag.ink { color: #fff; background: var(--ink); border-color: var(--ink); }
+
+    .square { display: inline-block; width: 10px; height: 10px; background: var(--accent); margin-right: 12px; vertical-align: 1px; flex: 0 0 10px; }
+    .square.gold { background: var(--gold); }
+    .square.blue { background: var(--blue); }
+    .square.risk { background: var(--risk); }
+    .square.muted { background: var(--muted); }
+
+    /* Tweak panel container area we don't need */
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+
+    <!-- ============ SLIDE 1 — TITLE ============ -->
+    <section data-label="01 Title">
+      <div class="frame">
+        <div class="meta">
+          <span><span style="display:inline-grid;place-items:center;width:48px;height:48px;border:2px solid var(--ink);font-weight:900;font-size:24px;letter-spacing:0;vertical-align:-15px;margin-right:18px;">LX</span>Level Construction · Client review draft</span>
+          <span class="num">Q3 · 2026</span>
+        </div>
+
+        <div style="flex:1; display:grid; grid-template-columns: 1.05fr 0.95fr; gap: 96px; align-items: center; margin-top: 64px;">
+          <div>
+            <p class="eyebrow" style="font-size:26px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin:0 0 32px;">A private operating system for Level</p>
+            <h1 style="font-size:124px; font-weight:800; line-height:0.94; letter-spacing:-0.028em; margin:0;">Level<br/>Intelligence<br/>OS</h1>
+            <p style="font-size:30px; line-height:1.3; color:var(--muted); margin:40px 0 0; max-width: 26ch; text-wrap: pretty;">A construction intelligence operating system for finding, qualifying, routing, and converting opportunities through Level's own operating judgment.</p>
+            <div style="display:flex; gap:40px; margin-top:48px; font-size:24px; font-weight:600; flex-wrap:nowrap; white-space:nowrap;">
+              <span><span class="square"></span>Early signals</span>
+              <span><span class="square"></span>Level-specific qualification</span>
+              <span><span class="square"></span>Executive rhythm</span>
+            </div>
+          </div>
+
+          <!-- composite product stack -->
+          <div style="position:relative; width: 100%; height: 740px;">
+            <!-- back card: executive brief -->
+            <div class="mock" style="position:absolute; right: 24px; top: 0; width: 620px; height: 500px; transform: rotate(-2deg);">
+              <div class="mock-bar">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                <span class="crumb">Executive brief <i>·</i> Mar 17</span>
+              </div>
+              <div style="padding: 28px 32px; display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px; flex:1;">
+                <div>
+                  <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:14px;">Changed</div>
+                  <div style="font-size:24px; line-height:1.4; color:var(--ink); font-weight:600;">4 new signals</div>
+                  <div style="font-size:24px; line-height:1.4; color:var(--muted); margin-top:10px;">Carter opens design phase</div>
+                </div>
+                <div>
+                  <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); margin-bottom:14px;">Stuck</div>
+                  <div style="font-size:24px; line-height:1.4; color:var(--ink); font-weight:600;">Westwell RFQ</div>
+                  <div style="font-size:24px; line-height:1.4; color:var(--muted); margin-top:10px;">Awaiting clarification · 6d</div>
+                </div>
+                <div>
+                  <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--risk); margin-bottom:14px;">Decide</div>
+                  <div style="font-size:24px; line-height:1.4; color:var(--ink); font-weight:600;">Cedar Park go/no-go</div>
+                  <div style="font-size:24px; line-height:1.4; color:var(--muted); margin-top:10px;">Recommend pursue · 0.82</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- front card: scorecard -->
+            <div class="mock" style="position:absolute; left: 0; bottom: 0; width: 580px; height: 460px; transform: rotate(1.5deg);">
+              <div class="mock-bar">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                <span class="crumb">Opportunity score <i>·</i> Carter / Hilton Garden Inn</span>
+              </div>
+              <div style="padding:28px 32px; flex:1; display:flex; flex-direction:column; gap:18px;">
+                <div style="display:flex; align-items:baseline; gap:24px;">
+                  <div style="font-size:88px; font-weight:800; line-height:1; letter-spacing:-0.02em; color:var(--accent);">0.84</div>
+                  <div style="font-size:26px; color:var(--muted);">Pursue · high confidence</div>
+                </div>
+                <hr class="rule" />
+                <div style="display:grid; grid-template-columns: 1fr auto; gap: 14px 0; font-size:24px;">
+                  <div>Geography fit</div><div><span style="display:inline-block;width:120px;height:8px;background:var(--line-2);"><span style="display:block;width:92%;height:100%;background:var(--accent);"></span></span></div>
+                  <div>Asset type</div><div><span style="display:inline-block;width:120px;height:8px;background:var(--line-2);"><span style="display:block;width:88%;height:100%;background:var(--accent);"></span></span></div>
+                  <div>Relationship strength</div><div><span style="display:inline-block;width:120px;height:8px;background:var(--line-2);"><span style="display:block;width:78%;height:100%;background:var(--accent);"></span></span></div>
+                  <div>Margin potential</div><div><span style="display:inline-block;width:120px;height:8px;background:var(--line-2);"><span style="display:block;width:62%;height:100%;background:var(--gold);"></span></span></div>
+                  <div>Entitlement complexity</div><div><span style="display:inline-block;width:120px;height:8px;background:var(--line-2);"><span style="display:block;width:46%;height:100%;background:var(--gold);"></span></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 2 — SCATTERED JUDGMENT ============ -->
+    <section data-label="02 Scattered judgment">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 01</span><span style="margin:0 18px;color:var(--line);">/</span>The starting point</span>
+          <span class="num">02 / 18</span>
+        </div>
+        <div style="margin-top: 56px; display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 96px; flex: 1;">
+          <div style="display:flex; flex-direction:column;">
+            <h2 class="title" style="max-width: 11ch;">Scattered judgment.</h2>
+            <p class="subtitle" style="margin-top:40px;">Level's advantage already exists. It just lives across emails, RFQs, permit threads, broker notes, project folders, and individual memory — places software cannot easily use.</p>
+            <div style="margin-top:auto; padding-top: 40px;">
+              <hr class="rule" />
+              <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 24px 0 0; max-width: 36ch;">This is not a lack of talent. It is an operating-memory problem.</p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 20px;">
+            <!-- Artifact card 1 — Email -->
+            <div class="mock" style="padding: 22px 26px;">
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Email · Fri 8:42 AM</div>
+              <div style="font-size:26px; font-weight:600; margin-top:12px;">"Sam — can we look at Cedar Park?"</div>
+              <div style="font-size:24px; color:var(--muted); margin-top:10px; line-height:1.35;">Broker tip, no follow-up assigned. Sat in BD inbox for 11 days.</div>
+            </div>
+            <!-- 2 — RFQ -->
+            <div class="mock" style="padding: 22px 26px;">
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">RFQ · Westwell Hotels</div>
+              <div style="font-size:26px; font-weight:600; margin-top:12px;">128-page bid package</div>
+              <div style="font-size:24px; color:var(--muted); margin-top:10px; line-height:1.35;">Bonding requirement on page 47. Deadline buried in cover letter.</div>
+            </div>
+            <!-- 3 — Permit -->
+            <div class="mock" style="padding: 22px 26px;">
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Permit comment</div>
+              <div style="font-size:26px; font-weight:600; margin-top:12px;">Plan review · 38 days in queue</div>
+              <div style="font-size:24px; color:var(--muted); margin-top:10px; line-height:1.35;">Three comments unanswered. Owner unclear.</div>
+            </div>
+            <!-- 4 — Spreadsheet -->
+            <div class="mock" style="padding: 22px 26px;">
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Spreadsheet · pursuits_v7</div>
+              <div style="font-size:26px; font-weight:600; margin-top:12px;">22 active rows, 4 owners</div>
+              <div style="font-size:24px; color:var(--muted); margin-top:10px; line-height:1.35;">Last touched Feb 6. Status column is freeform text.</div>
+            </div>
+            <!-- 5 — Call note -->
+            <div class="mock" style="padding: 22px 26px;">
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Call note · pocket notebook</div>
+              <div style="font-size:26px; font-weight:600; margin-top:12px;">"Carter — Q4 expansion"</div>
+              <div style="font-size:24px; color:var(--muted); margin-top:10px; line-height:1.35;">Three sites mentioned. Notebook stays in J's office.</div>
+            </div>
+            <!-- 6 — Memory -->
+            <div class="mock" style="padding: 22px 26px;">
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Individual memory</div>
+              <div style="font-size:26px; font-weight:600; margin-top:12px;">"We passed on this in '22"</div>
+              <div style="font-size:24px; color:var(--muted); margin-top:10px; line-height:1.35;">The reasoning is in one person's head.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 3 — COST ============ -->
+    <section data-label="03 Cost of scattered judgment">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 01</span><span style="margin:0 18px;color:var(--line);">/</span>The starting point</span>
+          <span class="num">03 / 18</span>
+        </div>
+
+        <div style="margin-top: 56px; display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 96px; flex: 1; align-items:start;">
+          <div>
+            <h2 class="title" style="max-width: 13ch;">The cost of scattered judgment.</h2>
+            <p class="subtitle" style="margin-top:40px;">It is not software inefficiency. It is missed operating leverage — blind spots, duplicated work, slower decisions, weaker follow-up, and less learning from wins and losses.</p>
+          </div>
+
+          <div style="display:flex; flex-direction:column;">
+            <div style="display:grid; grid-template-columns: 60px 1fr 220px; gap: 18px 32px; align-items: start; font-size: 28px; line-height: 1.25;">
+              <div style="border-top: 1px solid var(--line); grid-column: 1 / -1;"></div>
+
+              <div style="font-size:26px; font-weight:700; color:var(--muted-2); font-variant-numeric: tabular-nums;">01</div>
+              <div><div style="font-weight:600;">Early signals slip through</div><div style="color:var(--muted); margin-top:6px; font-size:24px;">Permits, planning, broker tips, ownership changes — captured late or never.</div></div>
+              <div style="text-align:right;"><span class="tag risk">Missed pipeline</span></div>
+              <div style="border-top: 1px solid var(--line); grid-column: 1 / -1;"></div>
+
+              <div style="font-size:26px; font-weight:700; color:var(--muted-2);">02</div>
+              <div><div style="font-weight:600;">Poor-fit pursuits consume attention</div><div style="color:var(--muted); margin-top:6px; font-size:24px;">Without scoring discipline, every signal feels worth chasing.</div></div>
+              <div style="text-align:right;"><span class="tag gold">Diluted focus</span></div>
+              <div style="border-top: 1px solid var(--line); grid-column: 1 / -1;"></div>
+
+              <div style="font-size:26px; font-weight:700; color:var(--muted-2);">03</div>
+              <div><div style="font-weight:600;">RFQ requirements slip</div><div style="color:var(--muted); margin-top:6px; font-size:24px;">Deadlines, addenda, and missing documents are caught late.</div></div>
+              <div style="text-align:right;"><span class="tag risk">Lost bids</span></div>
+              <div style="border-top: 1px solid var(--line); grid-column: 1 / -1;"></div>
+
+              <div style="font-size:26px; font-weight:700; color:var(--muted-2);">04</div>
+              <div><div style="font-weight:600;">Relationship follow-up gets inconsistent</div><div style="color:var(--muted); margin-top:6px; font-size:24px;">Context lives in inboxes. The next touch depends on memory.</div></div>
+              <div style="text-align:right;"><span class="tag gold">Weak compounding</span></div>
+              <div style="border-top: 1px solid var(--line); grid-column: 1 / -1;"></div>
+
+              <div style="font-size:26px; font-weight:700; color:var(--muted-2);">05</div>
+              <div><div style="font-weight:600;">Leadership assembles status</div><div style="color:var(--muted); margin-top:6px; font-size:24px;">Executives spend time gathering instead of deciding.</div></div>
+              <div style="text-align:right;"><span class="tag risk">Decision drag</span></div>
+              <div style="border-top: 1px solid var(--line); grid-column: 1 / -1;"></div>
+
+              <div style="font-size:26px; font-weight:700; color:var(--muted-2);">06</div>
+              <div><div style="font-weight:600;">Lessons do not improve next cycle</div><div style="color:var(--muted); margin-top:6px; font-size:24px;">Wins, losses, and passes are not feeding future scoring.</div></div>
+              <div style="text-align:right;"><span class="tag gold">No memory</span></div>
+              <div style="border-top: 1px solid var(--line); grid-column: 1 / -1;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 4 — WHY NOW ============ -->
+    <section data-label="04 Why now">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 02</span><span style="margin:0 18px;color:var(--line);">/</span>Why now</span>
+          <span class="num">04 / 18</span>
+        </div>
+
+        <div style="margin-top:56px; display:grid; grid-template-columns: 0.7fr 1.3fr; gap: 96px; flex: 1; align-items:start;">
+          <div>
+            <h2 class="title">Why now.</h2>
+            <p class="subtitle" style="margin-top:40px;">Construction pursuit work has always been language-heavy. Agents can finally read, structure, route, and remember it — turning analog artifacts into structured records.</p>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap: 26px;">
+            <!-- Row template: was → becomes -->
+            <div style="display:grid; grid-template-columns: 1fr 64px 1.4fr; gap: 24px; align-items:center;">
+              <div class="mock" style="padding: 18px 22px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Before</div>
+                <div style="font-size:28px; font-weight:600; margin-top:6px;">128-page RFQ package</div>
+              </div>
+              <div style="display:flex; justify-content:center; align-items:center; font-size:36px; color:var(--accent); font-weight:300;">→</div>
+              <div class="mock" style="padding: 18px 22px; border-color: var(--accent-2); background: var(--accent-2);">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent);">Becomes</div>
+                <div style="font-size:28px; font-weight:600; margin-top:6px;">Deadlines · scope risks · go/no-go memo</div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 64px 1.4fr; gap: 24px; align-items:center;">
+              <div class="mock" style="padding: 18px 22px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Before</div>
+                <div style="font-size:28px; font-weight:600; margin-top:6px;">Loose relationship notes</div>
+              </div>
+              <div style="display:flex; justify-content:center; align-items:center; font-size:36px; color:var(--accent); font-weight:300;">→</div>
+              <div class="mock" style="padding: 18px 22px; border-color: var(--accent-2); background: var(--accent-2);">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent);">Becomes</div>
+                <div style="font-size:28px; font-weight:600; margin-top:6px;">Account memory · next-touch suggestions</div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 64px 1.4fr; gap: 24px; align-items:center;">
+              <div class="mock" style="padding: 18px 22px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Before</div>
+                <div style="font-size:28px; font-weight:600; margin-top:6px;">Plan review comments</div>
+              </div>
+              <div style="display:flex; justify-content:center; align-items:center; font-size:36px; color:var(--accent); font-weight:300;">→</div>
+              <div class="mock" style="padding: 18px 22px; border-color: var(--accent-2); background: var(--accent-2);">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent);">Becomes</div>
+                <div style="font-size:28px; font-weight:600; margin-top:6px;">Blockers · owners · follow-up actions</div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 64px 1.4fr; gap: 24px; align-items:center;">
+              <div class="mock" style="padding: 18px 22px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2);">Before</div>
+                <div style="font-size:28px; font-weight:600; margin-top:6px;">Executive judgment in heads</div>
+              </div>
+              <div style="display:flex; justify-content:center; align-items:center; font-size:36px; color:var(--accent); font-weight:300;">→</div>
+              <div class="mock" style="padding: 18px 22px; border-color: var(--accent-2); background: var(--accent-2);">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent);">Becomes</div>
+                <div style="font-size:28px; font-weight:600; margin-top:6px;">Reusable learning signals · sharper scoring</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 5 — FORWARD-DEPLOYED SOFTWARE ============ -->
+    <section data-label="05 Forward-deployed software">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 02</span><span style="margin:0 18px;color:var(--line);">/</span>Why now</span>
+          <span class="num">05 / 18</span>
+        </div>
+
+        <div style="margin-top: 40px; flex: 1; display:flex; flex-direction:column;">
+          <h2 class="title">Forward-deployed software.</h2>
+          <p class="subtitle" style="margin-top: 24px; max-width: 76ch;">Enterprise software is moving from vendor screens to company-specific systems — built inside the company's real constraints, not licensed against them. OpenAI's 2026 deployment program is the most visible market signal.</p>
+
+          <div style="margin-top: 36px; flex:1; display:flex; flex-direction:column;">
+            <!-- header -->
+            <div style="display:grid; grid-template-columns: 0.7fr 1fr 1.3fr; gap: 48px; padding: 12px 0; font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color: var(--muted-2); border-bottom: 2px solid var(--ink);">
+              <div>The shift</div>
+              <div>Old pattern</div>
+              <div>New pattern</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 0.7fr 1fr 1.3fr; gap: 48px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 28px; line-height: 1.3; align-items: baseline;">
+              <div style="font-weight:700;">Software fit</div>
+              <div style="color:var(--muted);">Static SaaS screens<div style="font-size:24px; margin-top:4px;">Company adapts to the vendor.</div></div>
+              <div><b>Internal systems shaped by the company</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Software adapts to language, judgment, and operating rhythm.</div></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 0.7fr 1fr 1.3fr; gap: 48px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 28px; line-height: 1.3; align-items: baseline;">
+              <div style="font-weight:700;">Work pattern</div>
+              <div style="color:var(--muted);">Rules &amp; narrow automation<div style="font-size:24px; margin-top:4px;">Struggles with messy language-heavy work.</div></div>
+              <div><b>Agents that read, draft, route, and learn</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">RFQs, emails, permits, notes, and decisions become structured work.</div></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 0.7fr 1fr 1.3fr; gap: 48px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 28px; line-height: 1.3; align-items: baseline;">
+              <div style="font-weight:700;">Asset model</div>
+              <div style="color:var(--muted);">Vendor lock-in &amp; exports<div style="font-size:24px; margin-top:4px;">Operating history lives inside someone else's tool.</div></div>
+              <div><b>Operating memory owned by the company</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Decisions and outcomes become a proprietary, compounding asset.</div></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 0.7fr 1fr 1.3fr; gap: 48px; padding: 14px 0; font-size: 28px; line-height: 1.3; align-items: baseline;">
+              <div style="font-weight:700;">Delivery</div>
+              <div style="color:var(--muted);">Install &amp; hand off<div style="font-size:24px; margin-top:4px;">Adoption is the buyer's problem.</div></div>
+              <div><b>Forward deployment</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Experts map the work, ship inside real constraints, tune with operators.</div></div>
+            </div>
+          </div>
+
+          <p style="font-size:26px; color:var(--ink); margin: 20px 0 0; line-height:1.4; max-width: 96ch; font-weight: 500;">Level can build on the same pattern — privately — and own the compounding memory that comes with it.</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 5 — BUILT FOR LEVEL ============ -->
+    <section data-label="06 Built for Level">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 03</span><span style="margin:0 18px;color:var(--line);">/</span>How it fits Level</span>
+          <span class="num">06 / 18</span>
+        </div>
+
+        <div style="margin-top:48px; flex:1; display:flex; flex-direction:column;">
+          <h2 class="title" style="max-width: 16ch;">Built for Level.</h2>
+          <p class="subtitle" style="margin-top: 28px; max-width: 62ch;">Not a category product to evaluate. The operating layer is shaped from the ground up around Level's criteria, relationships, capacity, and decisions — and reshapes itself as Level evolves.</p>
+
+          <div style="margin-top: 44px; display:grid; grid-template-columns: repeat(2, 1fr); gap: 22px; flex: 1; align-content:start;">
+
+            <div class="mock" style="padding: 28px 32px; display:flex; flex-direction:column;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 14px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--accent);">01 · Judgment</div>
+                <span class="tag green">Level-specific</span>
+              </div>
+              <div style="font-size:36px; font-weight:800; line-height:1.05;">Encodes Level's judgment.</div>
+              <p style="font-size:25px; color:var(--ink); line-height:1.35; margin: 14px 0 0;">Geography, asset type, margin tolerance, capacity, financing fit, brand &amp; operator preferences — expressed as Level's own scoring criteria, including the exceptions leadership keeps making by hand.</p>
+            </div>
+
+            <div class="mock" style="padding: 28px 32px; display:flex; flex-direction:column;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 14px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--accent);">02 · Relationships</div>
+                <span class="tag green">Level-owned</span>
+              </div>
+              <div style="font-size:36px; font-weight:800; line-height:1.05;">Connects Level's relationships.</div>
+              <p style="font-size:25px; color:var(--ink); line-height:1.35; margin: 14px 0 0;">Accounts, contacts, prior projects, RFQ history, follow-ups, internal owners — the relationship graph the company already runs on, made searchable and actionable.</p>
+            </div>
+
+            <div class="mock" style="padding: 28px 32px; display:flex; flex-direction:column;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 14px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--accent);">03 · Workflow</div>
+                <span class="tag green">Level-shaped</span>
+              </div>
+              <div style="font-size:36px; font-weight:800; line-height:1.05;">Fits how Level works.</div>
+              <p style="font-size:25px; color:var(--ink); line-height:1.35; margin: 14px 0 0;">RFQ triage, go/no-go memos, approval rails, weekly executive cadence — modeled on Level's actual pursuit rhythm, and reshaped from the inside as Level's process changes.</p>
+            </div>
+
+            <div class="mock" style="padding: 28px 32px; display:flex; flex-direction:column; background: var(--ink); color: #fff; border-color: var(--ink);">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 14px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#6dd0b9;">04 · Evolution</div>
+                <span class="tag" style="background:rgba(255,255,255,0.08); color:#6dd0b9; border-color:rgba(255,255,255,0.2);">Compounds</span>
+              </div>
+              <div style="font-size:36px; font-weight:800; line-height:1.05;">Grows with Level.</div>
+              <p style="font-size:25px; color:rgba(255,255,255,0.84); line-height:1.35; margin: 14px 0 0;">Every decision, override, win, and loss sharpens the next score. AI providers stay replaceable as technology evolves — the operating memory stays Level's.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 7 — PROCORE BRIDGE ============ -->
+    <section data-label="07 Procore bridge">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 03</span><span style="margin:0 18px;color:var(--line);">/</span>How it fits Level</span>
+          <span class="num">07 / 18</span>
+        </div>
+
+        <div style="margin-top: 48px; flex: 1; display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns: 1.05fr 0.95fr; gap: 80px; align-items:end;">
+            <h2 class="title">Procore bridge.</h2>
+            <p class="subtitle" style="max-width: 42ch;">Wrap around Procore first, not replace it. Procore stays the source of truth for execution — the operating layer adds the intelligence and decisions it isn't designed for.</p>
+          </div>
+
+          <div style="margin-top: 52px; display:grid; grid-template-columns: repeat(4, 1fr); gap: 22px; flex: 1; align-content:start;">
+
+            <div class="mock" style="padding: 28px 30px; display:flex; flex-direction:column;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between;">
+                <div style="font-size:60px; font-weight:800; line-height:1; color:var(--accent); letter-spacing:-0.02em;">01</div>
+                <span class="tag green">Now</span>
+              </div>
+              <div style="font-size:32px; font-weight:800; margin-top:22px; line-height:1.08;">Read &amp; reference.</div>
+              <p style="font-size:25px; color:var(--ink); line-height:1.38; margin: 14px 0 0;">Treat Procore as the project source of truth. Pull only the data needed for visibility and decisions.</p>
+              <hr class="rule" style="margin: 20px 0 12px;" />
+              <div style="font-size:24px; color:var(--muted); line-height:1.35;">No disruption to field or project teams.</div>
+            </div>
+
+            <div class="mock" style="padding: 28px 30px; display:flex; flex-direction:column;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between;">
+                <div style="font-size:60px; font-weight:800; line-height:1; color:var(--accent); letter-spacing:-0.02em;">02</div>
+                <span class="tag green">Pilot</span>
+              </div>
+              <div style="font-size:32px; font-weight:800; margin-top:22px; line-height:1.08;">Workflow overlay.</div>
+              <p style="font-size:25px; color:var(--ink); line-height:1.38; margin: 14px 0 0;">Run signals, RFQs, go/no-go memos, relationships, approvals, and executive briefs in Level OS.</p>
+              <hr class="rule" style="margin: 20px 0 12px;" />
+              <div style="font-size:24px; color:var(--muted); line-height:1.35;">Operating rhythm improves without forcing a migration.</div>
+            </div>
+
+            <div class="mock" style="padding: 28px 30px; display:flex; flex-direction:column;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between;">
+                <div style="font-size:60px; font-weight:800; line-height:1; color:var(--gold); letter-spacing:-0.02em;">03</div>
+                <span class="tag gold">Phase two</span>
+              </div>
+              <div style="font-size:32px; font-weight:800; margin-top:22px; line-height:1.08;">Evidence-based rationalization.</div>
+              <p style="font-size:25px; color:var(--ink); line-height:1.38; margin: 14px 0 0;">Measure which workflows are better in Level OS and which should stay in Procore.</p>
+              <hr class="rule" style="margin: 20px 0 12px;" />
+              <div style="font-size:24px; color:var(--muted); line-height:1.35;">Software decisions based on observed value.</div>
+            </div>
+
+            <div class="mock" style="padding: 28px 30px; display:flex; flex-direction:column; background: var(--ink); color:#fff; border-color: var(--ink);">
+              <div style="display:flex; align-items:baseline; justify-content:space-between;">
+                <div style="font-size:60px; font-weight:800; line-height:1; color:#6dd0b9; letter-spacing:-0.02em;">04</div>
+                <span class="tag" style="background:rgba(255,255,255,0.08); color:#6dd0b9; border-color:rgba(255,255,255,0.2);">Long term</span>
+              </div>
+              <div style="font-size:32px; font-weight:800; margin-top:22px; line-height:1.08;">Selective replacement.</div>
+              <p style="font-size:25px; color:rgba(255,255,255,0.85); line-height:1.38; margin: 14px 0 0;">Move modules away from monolithic software only when the owned layer is clearly better, safer, and cheaper.</p>
+              <hr style="height:1px; background: rgba(255,255,255,0.18); border:0; margin: 20px 0 12px;" />
+              <div style="font-size:24px; color:rgba(255,255,255,0.62); line-height:1.35;">Dependency reduces without rip-and-replace.</div>
+            </div>
+          </div>
+
+          <p style="font-size:30px; color:var(--ink); margin: 32px 0 0; font-weight:600; line-height:1.3;">The operating principle: <span style="color:var(--accent);">earn the right to replace.</span></p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 6 — THE PROPOSITION ============ -->
+    <section data-label="08 The proposition">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 04</span><span style="margin:0 18px;color:var(--line);">/</span>The proposition</span>
+          <span class="num">08 / 18</span>
+        </div>
+
+        <div style="margin-top: 56px; flex: 1; display:flex; flex-direction:column;">
+          <h2 class="title">The proposition.</h2>
+          <p class="subtitle" style="margin-top: 36px; max-width: 60ch;">A private operating layer around Level's pursuit engine. One place to see the signal, understand the fit, route the work, and track the decision.</p>
+
+          <div style="margin-top: 80px; display:grid; grid-template-columns: repeat(4, 1fr); gap: 24px; flex: 1; align-content:start;">
+            <div class="mock" style="padding: 36px 36px 40px;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between;">
+                <div style="font-size:72px; font-weight:800; line-height:1; color:var(--accent); letter-spacing:-0.02em;">01</div>
+                <span class="tag green">Find</span>
+              </div>
+              <div style="font-size:36px; font-weight:700; margin-top:36px; line-height:1.1;">Detect.</div>
+              <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 18px 0 0;">Permits, planning, ownership, franchise, broker tips, inbound RFQs — captured before they go cold.</p>
+            </div>
+            <div class="mock" style="padding: 36px 36px 40px;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between;">
+                <div style="font-size:72px; font-weight:800; line-height:1; color:var(--accent); letter-spacing:-0.02em;">02</div>
+                <span class="tag green">Qualify</span>
+              </div>
+              <div style="font-size:36px; font-weight:700; margin-top:36px; line-height:1.1;">Score.</div>
+              <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 18px 0 0;">Each opportunity scored against Level's geography, asset, margin, and relationship criteria.</p>
+            </div>
+            <div class="mock" style="padding: 36px 36px 40px;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between;">
+                <div style="font-size:72px; font-weight:800; line-height:1; color:var(--accent); letter-spacing:-0.02em;">03</div>
+                <span class="tag green">Route</span>
+              </div>
+              <div style="font-size:36px; font-weight:700; margin-top:36px; line-height:1.1;">Assign.</div>
+              <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 18px 0 0;">Owners, next actions, and approvals routed so good opportunities don't stall in inboxes.</p>
+            </div>
+            <div class="mock" style="padding: 36px 36px 40px;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between;">
+                <div style="font-size:72px; font-weight:800; line-height:1; color:var(--accent); letter-spacing:-0.02em;">04</div>
+                <span class="tag green">Convert</span>
+              </div>
+              <div style="font-size:36px; font-weight:700; margin-top:36px; line-height:1.1;">Decide.</div>
+              <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 18px 0 0;">RFQs, go/no-go memos, pursuit briefs, and a weekly executive review.</p>
+            </div>
+          </div>
+
+          <p style="font-size:28px; color:var(--ink); margin: 64px 0 0; font-weight: 500; line-height:1.3; max-width: 88ch;">Every decision and outcome feeds the next score, brief, and recommendation. The system gets sharper every week Level uses it.</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 7 — OUTCOMES NOT CODE ============ -->
+    <section data-label="09 Outcomes not code" class="dark">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 04</span><span style="margin:0 18px;color:rgba(255,255,255,0.2);">/</span>The proposition</span>
+          <span class="num">09 / 18</span>
+        </div>
+
+        <div style="margin-top: 56px; flex:1; display:grid; grid-template-columns: 1fr 1.05fr; gap: 96px; align-items:start;">
+          <div>
+            <p style="font-size:26px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#6dd0b9; margin:0 0 36px;">Commercial promise</p>
+            <h2 style="font-size:128px; font-weight:800; line-height:0.94; letter-spacing:-0.025em; margin:0;">Outcomes,<br/>not code.</h2>
+            <p style="font-size:32px; color:rgba(255,255,255,0.78); line-height:1.3; margin: 48px 0 0; max-width: 28ch; text-wrap: pretty;">Code is the mechanism. The product is a working operating rhythm — a sharper way Level finds, decides, and acts.</p>
+          </div>
+
+          <div style="display:flex; flex-direction:column;">
+            <div style="border-top: 1px solid rgba(255,255,255,0.18);"></div>
+            <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 24px 40px; padding: 28px 0; border-bottom: 1px solid rgba(255,255,255,0.12); align-items:baseline;">
+              <div style="font-size:30px; font-weight:600;">Pipeline visibility</div>
+              <div style="font-size:24px; color: rgba(255,255,255,0.74); line-height:1.4;">Every pursuit has an owner, stage, score, next action, and age.</div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 24px 40px; padding: 28px 0; border-bottom: 1px solid rgba(255,255,255,0.12); align-items:baseline;">
+              <div style="font-size:30px; font-weight:600;">RFQ discipline</div>
+              <div style="font-size:24px; color: rgba(255,255,255,0.74); line-height:1.4;">Deadlines, requirements, missing info, and go/no-go reasoning extracted and routed.</div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 24px 40px; padding: 28px 0; border-bottom: 1px solid rgba(255,255,255,0.12); align-items:baseline;">
+              <div style="font-size:30px; font-weight:600;">Decision speed</div>
+              <div style="font-size:24px; color: rgba(255,255,255,0.74); line-height:1.4;">Approvals and exceptions surface before they become bottlenecks.</div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 24px 40px; padding: 28px 0; border-bottom: 1px solid rgba(255,255,255,0.12); align-items:baseline;">
+              <div style="font-size:30px; font-weight:600;">Executive rhythm</div>
+              <div style="font-size:24px; color: rgba(255,255,255,0.74); line-height:1.4;">Leadership gets a weekly brief generated from live system data.</div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 24px 40px; padding: 28px 0; align-items:baseline;">
+              <div style="font-size:30px; font-weight:600;">Enterprise memory</div>
+              <div style="font-size:24px; color: rgba(255,255,255,0.74); line-height:1.4;">Signals, decisions, outcomes, and overrides feed the next cycle.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 8 — SIGNAL INBOX ============ -->
+    <section data-label="10 Signal inbox">
+      <div class="frame tight">
+        <div class="meta">
+          <span><span class="accent">Section 05 · Product</span><span style="margin:0 18px;color:var(--line);">/</span>Surface 01 — Signal inbox</span>
+          <span class="num">10 / 18</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 0.55fr 1.45fr; gap: 56px; margin-top: 32px; flex:1; align-items: start;">
+          <div>
+            <h2 style="font-size:64px; font-weight:800; line-height:0.98; letter-spacing:-0.02em; margin:0;">Signal inbox.</h2>
+            <p style="font-size:28px; color:var(--muted); line-height:1.32; margin: 28px 0 0; max-width: 28ch;">Earlier signals, structured before they become noise.</p>
+            <hr class="rule" style="margin: 36px 0;" />
+            <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); margin-bottom:18px;">Sources</div>
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px; font-size:24px; color:var(--ink);">
+              <li><span class="square"></span>Permits &amp; planning</li>
+              <li><span class="square"></span>Title &amp; ownership changes</li>
+              <li><span class="square"></span>Hospitality &amp; franchise expansion</li>
+              <li><span class="square"></span>Broker notes &amp; relationship tips</li>
+              <li><span class="square"></span>Inbound RFQs</li>
+              <li><span class="square"></span>CRM &amp; email activity</li>
+            </ul>
+          </div>
+
+          <!-- mock: signal inbox -->
+          <div class="mock" style="height: 880px;">
+            <div class="mock-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="crumb">Inbox <i>·</i> Signals · all markets</span>
+              <span class="right">
+                <span class="pill">Score ≥ 0.6</span>
+                <span class="pill">Last 14d</span>
+              </span>
+            </div>
+            <div style="display:flex; flex:1; min-height: 0;">
+              <div style="width: 180px; background: var(--paper); border-right: 1px solid var(--line-2); padding: 20px 12px; font-size: 24px; display:flex; flex-direction:column; gap: 4px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); padding: 6px 10px;">Pursuits</div>
+                <div style="background:var(--ink); color:#fff; padding: 10px 12px; font-weight:600;">Inbox <span style="float:right; color:rgba(255,255,255,0.6);">28</span></div>
+                <div style="padding: 10px 12px; color:var(--muted);">Pipeline <span style="float:right;">42</span></div>
+                <div style="padding: 10px 12px; color:var(--muted);">RFQs <span style="float:right;">7</span></div>
+                <div style="padding: 10px 12px; color:var(--muted);">Approvals <span style="float:right; color:var(--gold);">3</span></div>
+                <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); padding: 18px 10px 6px;">Memory</div>
+                <div style="padding: 10px 12px; color:var(--muted);">Accounts</div>
+                <div style="padding: 10px 12px; color:var(--muted);">Brief</div>
+              </div>
+
+              <div style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+                <!-- header row -->
+                <div style="display:grid; grid-template-columns: 120px 1fr 160px 110px 180px; gap: 16px; padding: 16px 24px; font-size: 24px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--muted-2); border-bottom: 1px solid var(--line-2); background: var(--paper);">
+                  <div>Source</div>
+                  <div>Project</div>
+                  <div>Market</div>
+                  <div>Score</div>
+                  <div>Next action</div>
+                </div>
+                <!-- highlighted -->
+                <div style="display:grid; grid-template-columns: 120px 1fr 160px 110px 180px; gap:16px; padding: 20px 24px; font-size: 26px; align-items:center; background: #f6fbf9; border-left: 4px solid var(--accent);">
+                  <div><span class="tag green">Permit</span></div>
+                  <div><b>Cedar Park HGI</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">120-key · Carter Hospitality</div></div>
+                  <div style="color:var(--muted);">Cedar Park, TX</div>
+                  <div><b style="font-size:30px; color:var(--accent);">0.84</b></div>
+                  <div style="color:var(--ink);">Brief → S. Reyes</div>
+                </div>
+                <!-- rows -->
+                <div style="display:grid; grid-template-columns: 120px 1fr 160px 110px 180px; gap:16px; padding: 18px 24px; font-size: 26px; align-items:center; border-bottom: 1px solid var(--line-2);">
+                  <div><span class="tag blue">RFQ</span></div>
+                  <div><b>Westwell TI repositioning</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">85-key conversion</div></div>
+                  <div style="color:var(--muted);">Dallas, TX</div>
+                  <div><b style="font-size:30px;">0.71</b></div>
+                  <div style="color:var(--ink);">Triage 12d ⚠</div>
+                </div>
+                <div style="display:grid; grid-template-columns: 120px 1fr 160px 110px 180px; gap:16px; padding: 18px 24px; font-size: 26px; align-items:center; border-bottom: 1px solid var(--line-2);">
+                  <div><span class="tag">Planning</span></div>
+                  <div><b>West Loop mixed-use</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Variance hearing scheduled</div></div>
+                  <div style="color:var(--muted);">Chicago, IL</div>
+                  <div><b style="font-size:30px;">0.62</b></div>
+                  <div style="color:var(--ink);">Watch</div>
+                </div>
+                <div style="display:grid; grid-template-columns: 120px 1fr 160px 110px 180px; gap:16px; padding: 18px 24px; font-size: 26px; align-items:center; border-bottom: 1px solid var(--line-2);">
+                  <div><span class="tag gold">Broker</span></div>
+                  <div><b>Marriott AC franchisee tip</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Possible RFQ in 60–90d</div></div>
+                  <div style="color:var(--muted);">Schaumburg, IL</div>
+                  <div><b style="font-size:30px;">0.58</b></div>
+                  <div style="color:var(--ink);">Warm intro</div>
+                </div>
+                <div style="display:grid; grid-template-columns: 120px 1fr 160px 110px 180px; gap:16px; padding: 18px 24px; font-size: 26px; align-items:center;">
+                  <div><span class="tag">Title</span></div>
+                  <div><b>1820 Commerce ownership change</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Hospitality REIT acquisition</div></div>
+                  <div style="color:var(--muted);">Houston, TX</div>
+                  <div><b style="font-size:30px;">0.48</b></div>
+                  <div style="color:var(--muted);">Watch</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 9 — QUALIFICATION SCORE ============ -->
+    <section data-label="11 Qualification score">
+      <div class="frame tight">
+        <div class="meta">
+          <span><span class="accent">Section 05 · Product</span><span style="margin:0 18px;color:var(--line);">/</span>Surface 02 — Qualification</span>
+          <span class="num">11 / 18</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 0.55fr 1.45fr; gap: 56px; margin-top: 32px; flex:1; align-items:start;">
+          <div>
+            <h2 style="font-size:64px; font-weight:800; line-height:0.98; letter-spacing:-0.02em; margin:0;">Qualification score.</h2>
+            <p style="font-size:28px; color:var(--muted); line-height:1.32; margin: 28px 0 0; max-width: 28ch;">The score reflects Level's judgment, not a generic model.</p>
+            <hr class="rule" style="margin: 36px 0;" />
+            <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); margin-bottom:18px;">Dimensions</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; font-size:24px;">
+              <div><span class="square"></span>Geography</div>
+              <div><span class="square"></span>Asset type</div>
+              <div><span class="square"></span>Project size</div>
+              <div><span class="square"></span>Relationship</div>
+              <div><span class="square"></span>Margin potential</div>
+              <div><span class="square"></span>Entitlement risk</div>
+              <div><span class="square"></span>Financing fit</div>
+              <div><span class="square"></span>Internal capacity</div>
+              <div><span class="square"></span>Brand &amp; operator</div>
+              <div><span class="square"></span>Strategic value</div>
+            </div>
+          </div>
+
+          <div class="mock" style="height: 880px;">
+            <div class="mock-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="crumb">Opportunity <i>·</i> Carter / Cedar Park HGI</span>
+              <span class="right"><span class="pill">Scored 2h ago</span></span>
+            </div>
+            <div style="padding: 36px 40px; display:grid; grid-template-columns: 0.85fr 1.15fr; gap: 40px; flex:1;">
+              <!-- left: big score -->
+              <div style="display:flex; flex-direction:column;">
+                <div style="display:flex; align-items:baseline; gap: 18px;">
+                  <div style="font-size:140px; font-weight:800; line-height:0.9; letter-spacing:-0.03em; color:var(--accent);">0.84</div>
+                  <div style="font-size:30px; color:var(--muted);">/ 1.00</div>
+                </div>
+                <div style="margin-top: 18px; display:flex; gap:10px;">
+                  <span class="tag green" style="font-size:24px;">Pursue</span>
+                  <span class="tag" style="font-size:24px;">High confidence</span>
+                </div>
+                <p style="font-size:25px; color:var(--ink); line-height:1.4; margin: 36px 0 0;">Carter is an existing relationship with strong hospitality fit. Site is entitled, financing is credible, and timing aligns with crew availability in Q4.</p>
+                <hr class="rule" style="margin: 32px 0;" />
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom: 14px;">Missing</div>
+                <div style="font-size:26px; line-height:1.4;">Bonding ceiling confirmation · prior Carter punch-list</div>
+                <div style="margin-top: auto; padding-top: 28px;">
+                  <div style="display:flex; gap:14px;">
+                    <div style="flex:1; background:var(--ink); color:#fff; padding: 16px 22px; font-size:26px; font-weight:600; text-align:center;">Recommend pursue</div>
+                    <div style="flex:0 0 auto; background:var(--surface); border: 1px solid var(--line); padding: 16px 22px; font-size:26px; color:var(--ink); text-align:center;">Edit</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- right: dimensions -->
+              <div style="display:flex; flex-direction:column; gap: 0;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom: 18px;">Score breakdown</div>
+                <!-- bars -->
+                <div style="display:grid; grid-template-columns: 220px 1fr 70px; gap: 14px 24px; align-items:center; font-size:24px;">
+                  <div>Geography</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:92%; background:var(--accent);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.92</div>
+                  <div>Asset type</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:88%; background:var(--accent);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.88</div>
+                  <div>Relationship</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:78%; background:var(--accent);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.78</div>
+                  <div>Project size</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:75%; background:var(--accent);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.75</div>
+                  <div>Margin potential</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:62%; background:var(--gold);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.62</div>
+                  <div>Entitlement risk</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:54%; background:var(--gold);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.54</div>
+                  <div>Financing credibility</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:82%; background:var(--accent);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.82</div>
+                  <div>Capacity (Q4)</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:70%; background:var(--accent);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.70</div>
+                  <div>Strategic value</div><div style="height:14px; background: var(--line-2);"><div style="height:100%; width:88%; background:var(--accent);"></div></div><div style="text-align:right; font-feature-settings:'tnum'; font-weight:600;">0.88</div>
+                </div>
+
+                <hr class="rule" style="margin: 28px 0;" />
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom: 14px;">Comparable Level work</div>
+                <div style="font-size:24px; line-height:1.4; color:var(--ink);">Carter / Hampton Inn Plano (2024) · 0.81 · won</div>
+                <div style="font-size:24px; line-height:1.4; color:var(--ink); margin-top:6px;">Carter / Holiday Inn Express Naperville (2023) · 0.77 · won</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 10 — RELATIONSHIP MEMORY ============ -->
+    <section data-label="12 Relationship memory">
+      <div class="frame tight">
+        <div class="meta">
+          <span><span class="accent">Section 05 · Product</span><span style="margin:0 18px;color:var(--line);">/</span>Surface 03 — Relationship memory</span>
+          <span class="num">12 / 18</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 0.55fr 1.45fr; gap: 56px; margin-top: 32px; flex:1; align-items:start;">
+          <div>
+            <h2 style="font-size:64px; font-weight:800; line-height:0.98; letter-spacing:-0.02em; margin:0;">Relationship memory.</h2>
+            <p style="font-size:28px; color:var(--muted); line-height:1.32; margin: 28px 0 0; max-width: 28ch;">Context becomes searchable. Memory becomes operational.</p>
+            <hr class="rule" style="margin: 36px 0;" />
+            <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); margin-bottom:18px;">Answers</div>
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px; font-size:24px; line-height:1.35;">
+              <li><span class="square"></span>Who do we know here?</li>
+              <li><span class="square"></span>Who owns the relationship?</li>
+              <li><span class="square"></span>What have we built or bid with them?</li>
+              <li><span class="square"></span>When was the last meaningful touch?</li>
+              <li><span class="square"></span>What should we say next?</li>
+            </ul>
+          </div>
+
+          <div class="mock" style="height: 880px;">
+            <div class="mock-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="crumb">Account <i>·</i> Carter Hospitality Group</span>
+              <span class="right"><span class="pill">3 active</span></span>
+            </div>
+            <div style="padding: 32px 40px; display:flex; flex-direction:column; gap: 24px; flex:1; overflow:hidden;">
+
+              <!-- account header -->
+              <div style="display:grid; grid-template-columns: 80px 1fr auto; gap: 24px; align-items:center;">
+                <div style="width: 80px; height: 80px; border: 2px solid var(--ink); display:grid; place-items:center; font-weight:800; font-size:32px;">CH</div>
+                <div>
+                  <div style="font-size:36px; font-weight:700; line-height:1.1;">Carter Hospitality Group</div>
+                  <div style="font-size:24px; color:var(--muted); margin-top:8px;">Dallas, TX · Hospitality developer · 14 properties</div>
+                </div>
+                <div style="text-align:right; white-space:nowrap;">
+                  <div style="font-size:24px; color:var(--muted); margin-bottom:4px;">Strength</div>
+                  <div style="font-size:32px; font-weight:700; color:var(--accent); line-height:1;">Strong · 0.78</div>
+                </div>
+              </div>
+
+              <hr class="rule" />
+
+              <div style="display:grid; grid-template-columns: 1.05fr 1.05fr 0.9fr; gap: 32px; flex:1; min-height: 0;">
+                <!-- contacts -->
+                <div>
+                  <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:18px;">Contacts</div>
+                  <div style="display:flex; flex-direction:column; gap: 14px;">
+                    <div style="border:1px solid var(--line); padding: 14px 18px; display:flex; gap:14px; align-items:center;">
+                      <div style="width:48px;height:48px;background:var(--accent-2);color:var(--accent);font-weight:700;display:grid;place-items:center;font-size:24px;">JC</div>
+                      <div style="flex:1; font-size:25px;"><b>James Carter</b><div style="font-size:24px; color:var(--muted);">President · primary buyer</div></div>
+                    </div>
+                    <div style="border:1px solid var(--line); padding: 14px 18px; display:flex; gap:14px; align-items:center;">
+                      <div style="width:48px;height:48px;background:var(--gold-2);color:var(--gold);font-weight:700;display:grid;place-items:center;font-size:24px;">MK</div>
+                      <div style="flex:1; font-size:25px;"><b>Marcia Khoury</b><div style="font-size:24px; color:var(--muted);">VP Development</div></div>
+                    </div>
+                    <div style="border:1px solid var(--line); padding: 14px 18px; display:flex; gap:14px; align-items:center;">
+                      <div style="width:48px;height:48px;background:var(--blue-2);color:var(--blue);font-weight:700;display:grid;place-items:center;font-size:24px;">DT</div>
+                      <div style="flex:1; font-size:25px;"><b>David Tan</b><div style="font-size:24px; color:var(--muted);">Director of Construction</div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- timeline -->
+                <div>
+                  <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:18px;">Recent touches</div>
+                  <div style="display:flex; flex-direction:column; gap: 14px; font-size:24px;">
+                    <div><b>Mar 14</b> · James — design phase email <span style="color:var(--accent);">·  open</span></div>
+                    <div><b>Feb 28</b> · Marcia — site visit, Cedar Park</div>
+                    <div><b>Feb 06</b> · David — Carter QC sync</div>
+                    <div><b>Jan 22</b> · James — Q1 pipeline review</div>
+                    <div><b>Dec 14</b> · Plano closeout walk-through</div>
+                  </div>
+                  <hr class="rule" style="margin: 22px 0;" />
+                  <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:12px;">Past Level work</div>
+                  <div style="font-size:24px; line-height:1.45;">
+                    Hampton Inn Plano · 2024 · won<br/>
+                    Holiday Inn Express Naperville · 2023 · won<br/>
+                    Oak Park AC · 2022 · passed (capacity)
+                  </div>
+                </div>
+
+                <!-- active + next -->
+                <div>
+                  <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:18px;">Active pursuits</div>
+                  <div style="display:flex; flex-direction:column; gap: 12px;">
+                    <div style="border-left: 4px solid var(--accent); padding: 10px 16px; background: var(--accent-2); font-size:24px;"><b>Cedar Park HGI</b><div style="color:var(--accent); margin-top:2px;">Pursue · 0.84</div></div>
+                    <div style="border-left: 4px solid var(--gold); padding: 10px 16px; background: var(--gold-2); font-size:24px;"><b>Naperville TI</b><div style="color:var(--gold); margin-top:2px;">Watch · 0.61</div></div>
+                  </div>
+
+                  <div style="margin-top: 24px; background:var(--ink); color:#fff; padding: 20px 22px;">
+                    <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#6dd0b9; margin-bottom:8px;">Suggested next touch</div>
+                    <div style="font-size:26px; line-height:1.35; font-weight:600;">Reply to James on Cedar Park design phase — anchor on Q4 mobilization window.</div>
+                    <div style="font-size:24px; color:rgba(255,255,255,0.7); margin-top:10px;">Owner · S. Reyes &nbsp;|&nbsp; Due Thu</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 11 — RFQ COMMAND CENTER ============ -->
+    <section data-label="13 RFQ command center">
+      <div class="frame tight">
+        <div class="meta">
+          <span><span class="accent">Section 05 · Product</span><span style="margin:0 18px;color:var(--line);">/</span>Surface 04 — RFQ command center</span>
+          <span class="num">13 / 18</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 0.55fr 1.45fr; gap: 56px; margin-top: 32px; flex:1; align-items:start;">
+          <div>
+            <h2 style="font-size:64px; font-weight:800; line-height:0.98; letter-spacing:-0.02em; margin:0;">RFQ command&nbsp;center.</h2>
+            <p style="font-size:28px; color:var(--muted); line-height:1.32; margin: 28px 0 0; max-width: 28ch;">Turn RFQs into decision-ready work.</p>
+            <hr class="rule" style="margin: 36px 0;" />
+            <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); margin-bottom:18px;">What it extracts</div>
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:14px; font-size:24px;">
+              <li><span class="square"></span>Scope &amp; deliverables</li>
+              <li><span class="square"></span>Deadlines &amp; submission format</li>
+              <li><span class="square"></span>Required attachments</li>
+              <li><span class="square"></span>Bonding, insurance, site risk</li>
+              <li><span class="square"></span>Comparable past work</li>
+              <li><span class="square"></span>Go/no-go memo &amp; bid tasks</li>
+            </ul>
+          </div>
+
+          <div class="mock" style="height: 880px;">
+            <div class="mock-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="crumb">RFQ <i>·</i> Westwell Hotels — Dallas Reposition</span>
+              <span class="right"><span class="pill risk" style="background:var(--risk-2); color:var(--risk); border-color:var(--risk-2);">Due in 6d</span></span>
+            </div>
+            <div style="padding: 28px 36px; display:grid; grid-template-columns: 1fr 1fr 0.9fr; gap: 28px; flex:1; min-height:0;">
+
+              <!-- requirements -->
+              <div style="display:flex; flex-direction:column; min-height:0;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:14px;">Extracted requirements</div>
+                <div style="display:flex; flex-direction:column; gap: 12px; font-size:24px; overflow:hidden;">
+                  <div style="border-bottom: 1px solid var(--line-2); padding-bottom: 10px;"><b>Scope</b><div style="color:var(--muted); margin-top:4px;">85-key TI conversion · select-service to upscale</div></div>
+                  <div style="border-bottom: 1px solid var(--line-2); padding-bottom: 10px;"><b>Submission</b><div style="color:var(--muted); margin-top:4px;">PDF · 25-page max · technical + price separated</div></div>
+                  <div style="border-bottom: 1px solid var(--line-2); padding-bottom: 10px;"><b>Bonding</b><div style="color:var(--muted); margin-top:4px;">100% payment + performance, $14M ceiling</div></div>
+                  <div style="border-bottom: 1px solid var(--line-2); padding-bottom: 10px;"><b>Insurance</b><div style="color:var(--muted); margin-top:4px;">$10M umbrella, hospitality-specific endorsement</div></div>
+                  <div style="border-bottom: 1px solid var(--line-2); padding-bottom: 10px;"><b>Schedule</b><div style="color:var(--muted); margin-top:4px;">Mobilize Sep 1 · TCO Apr 15</div></div>
+                  <div><b>Attachments</b><div style="color:var(--muted); margin-top:4px;">Existing-conditions report · Phase II ESA · operator brand standards</div></div>
+                </div>
+              </div>
+
+              <!-- risks -->
+              <div style="display:flex; flex-direction:column; min-height:0;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:14px;">Risk flags &amp; gaps</div>
+                <div style="display:flex; flex-direction:column; gap: 14px; font-size:24px;">
+                  <div style="border-left: 4px solid var(--risk); background: var(--risk-2); padding: 12px 16px;"><b style="color:var(--risk);">Schedule risk</b><div style="color:var(--ink); margin-top:4px;">7-month duration is tight given brand-standard FF&amp;E lead times.</div></div>
+                  <div style="border-left: 4px solid var(--gold); background: var(--gold-2); padding: 12px 16px;"><b style="color:var(--gold);">Missing document</b><div style="color:var(--ink); margin-top:4px;">Phase II ESA not in package — request before bid.</div></div>
+                  <div style="border-left: 4px solid var(--gold); background: var(--gold-2); padding: 12px 16px;"><b style="color:var(--gold);">Margin sensitivity</b><div style="color:var(--ink); margin-top:4px;">Owner is price-sensitive; comparable Dallas work ran 4.2% net.</div></div>
+                  <div style="border-left: 4px solid var(--accent); background: var(--accent-2); padding: 12px 16px;"><b style="color:var(--accent);">Comparable work</b><div style="color:var(--ink); margin-top:4px;">Frisco AC TI (2024) — same operator pattern, on schedule.</div></div>
+                </div>
+                <div style="margin-top:auto; padding-top:18px;">
+                  <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:10px;">Bid tasks</div>
+                  <div style="font-size:24px; line-height:1.45;">
+                    ☐ Pricing draft · L. Park<br/>
+                    ☑ Brand-standard FF&amp;E quote
+                  </div>
+                </div>
+              </div>
+
+              <!-- decision panel -->
+              <div style="background: var(--ink); color: #fff; padding: 24px 26px; display:flex; flex-direction:column;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#6dd0b9; margin-bottom:14px;">Go / no-go memo</div>
+                <div style="font-size:30px; font-weight:700; line-height:1.2;">Recommend: pursue with conditions</div>
+                <div style="font-size:24px; color:rgba(255,255,255,0.78); line-height:1.45; margin-top:14px;">Fit is high. Margin sensitivity and FF&amp;E schedule risk are the two material concerns. Bid only if Westwell confirms Sep 1 mobilization and shares Phase II ESA.</div>
+                <hr style="height:1px; background: rgba(255,255,255,0.18); border:0; margin: 22px 0;" />
+                <div style="font-size:24px; color:rgba(255,255,255,0.7);">Confidence <b style="color:#fff;">0.71</b></div>
+                <div style="font-size:24px; color:rgba(255,255,255,0.7); margin-top:6px;">Approver <b style="color:#fff;">M. Levin</b></div>
+                <div style="margin-top:auto; display:flex; gap:10px; padding-top: 22px;">
+                  <div style="flex:1; background: var(--accent); color: #fff; padding: 16px; font-size:24px; font-weight:600; text-align:center;">Submit memo</div>
+                  <div style="background: transparent; color: #fff; padding: 16px; font-size:24px; text-align:center; border: 1px solid rgba(255,255,255,0.3);">Edit</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 12 — APPROVAL QUEUE ============ -->
+    <section data-label="14 Approval queue">
+      <div class="frame tight">
+        <div class="meta">
+          <span><span class="accent">Section 05 · Product</span><span style="margin:0 18px;color:var(--line);">/</span>Surface 05 — Human approval queue</span>
+          <span class="num">14 / 18</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 0.55fr 1.45fr; gap: 56px; margin-top: 32px; flex:1; align-items:start;">
+          <div>
+            <h2 style="font-size:64px; font-weight:800; line-height:0.98; letter-spacing:-0.02em; margin:0;">Approval queue.</h2>
+            <p style="font-size:28px; color:var(--muted); line-height:1.32; margin: 28px 0 0; max-width: 28ch;">The system prepares. Level decides.</p>
+            <hr class="rule" style="margin: 36px 0;" />
+            <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); margin-bottom:18px;">Authority model</div>
+            <div style="display:flex; flex-direction:column; gap: 16px; font-size:24px;">
+              <div><span class="tag green" style="font-size:24px;">Autonomous</span><div style="color:var(--muted); margin-top:6px;">Summarize, classify, dedupe.</div></div>
+              <div><span class="tag blue" style="font-size:24px;">Suggest</span><div style="color:var(--muted); margin-top:6px;">Recommend owner, action, pursue/watch/pass.</div></div>
+              <div><span class="tag gold" style="font-size:24px;">Approval required</span><div style="color:var(--muted); margin-top:6px;">Outreach, bid, vendor award, budget change.</div></div>
+              <div><span class="tag risk" style="font-size:24px;">Manual</span><div style="color:var(--muted); margin-top:6px;">Legal, financing, final strategic decisions.</div></div>
+            </div>
+          </div>
+
+          <div class="mock" style="height: 880px;">
+            <div class="mock-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="crumb">Approvals <i>·</i> 3 awaiting · 11 this week</span>
+              <span class="right"><span class="pill">Last 7d</span></span>
+            </div>
+            <div style="padding: 0; flex:1; display:flex; flex-direction:column;">
+              <!-- header -->
+              <div style="display:grid; grid-template-columns: 0.4fr 1.5fr 0.7fr 0.6fr 0.7fr 0.7fr; gap: 16px; padding: 18px 32px; font-size: 24px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color: var(--muted-2); border-bottom: 1px solid var(--line-2); background: var(--paper);">
+                <div>Type</div><div>Recommendation</div><div>Evidence</div><div>Conf.</div><div>Approver</div><div>State</div>
+              </div>
+
+              <!-- selected row -->
+              <div style="display:grid; grid-template-columns: 0.4fr 1.5fr 0.7fr 0.6fr 0.7fr 0.7fr; gap: 16px; padding: 24px 32px; font-size: 25px; align-items:center; background: #f6fbf9; border-left: 4px solid var(--accent);">
+                <div><span class="tag gold" style="font-size:24px;">Bid</span></div>
+                <div><b>Submit Westwell Dallas RFQ with conditions</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Memo drafted · 25-page submission · technical + price</div></div>
+                <div style="font-size:24px; color:var(--muted);">Memo · 3 sources</div>
+                <div style="font-size:28px; font-weight:700;">0.71</div>
+                <div style="font-size:24px;">M. Levin</div>
+                <div style="display:flex; gap:8px;"><span style="background:var(--accent); color:#fff; padding: 8px 14px; font-size:24px; font-weight:600;">Approve</span><span style="border:1px solid var(--line); padding: 8px 14px; font-size:24px;">Edit</span></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 0.4fr 1.5fr 0.7fr 0.6fr 0.7fr 0.7fr; gap: 16px; padding: 22px 32px; font-size: 25px; align-items:center; border-bottom: 1px solid var(--line-2);">
+                <div><span class="tag" style="font-size:24px;">Outreach</span></div>
+                <div><b>Warm intro to Hyatt Place franchisee, Schaumburg</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Suggested message attached</div></div>
+                <div style="font-size:24px; color:var(--muted);">Broker tip</div>
+                <div style="font-size:28px; font-weight:700;">0.62</div>
+                <div style="font-size:24px;">S. Reyes</div>
+                <div><span class="tag gold" style="font-size:24px;">Awaiting</span></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 0.4fr 1.5fr 0.7fr 0.6fr 0.7fr 0.7fr; gap: 16px; padding: 22px 32px; font-size: 25px; align-items:center; border-bottom: 1px solid var(--line-2);">
+                <div><span class="tag risk" style="font-size:24px;">Vendor</span></div>
+                <div><b>Award concrete subcontract — Cedar Park</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">3 bids reviewed · Hartwell lowest with prior track record</div></div>
+                <div style="font-size:24px; color:var(--muted);">3 bids</div>
+                <div style="font-size:28px; font-weight:700;">0.78</div>
+                <div style="font-size:24px;">D. Pham</div>
+                <div><span class="tag gold" style="font-size:24px;">Awaiting</span></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 0.4fr 1.5fr 0.7fr 0.6fr 0.7fr 0.7fr; gap: 16px; padding: 22px 32px; font-size: 25px; align-items:center;">
+                <div><span class="tag blue" style="font-size:24px;">Pursue</span></div>
+                <div><b>Move Cedar Park HGI to pursue</b><div style="font-size:24px; color:var(--muted); margin-top:4px;">Score 0.84 · Carter relationship · capacity confirmed</div></div>
+                <div style="font-size:24px; color:var(--muted);">Score · 6 dims</div>
+                <div style="font-size:28px; font-weight:700;">0.84</div>
+                <div style="font-size:24px;">M. Levin</div>
+                <div><span class="tag green" style="font-size:24px;">Approved</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 13 — EXECUTIVE BRIEF ============ -->
+    <section data-label="15 Executive brief">
+      <div class="frame tight">
+        <div class="meta">
+          <span><span class="accent">Section 05 · Product</span><span style="margin:0 18px;color:var(--line);">/</span>Surface 06 — Weekly executive brief</span>
+          <span class="num">15 / 18</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 0.55fr 1.45fr; gap: 56px; margin-top: 32px; flex:1; align-items:start;">
+          <div>
+            <h2 style="font-size:64px; font-weight:800; line-height:0.98; letter-spacing:-0.02em; margin:0;">Executive brief.</h2>
+            <p style="font-size:28px; color:var(--muted); line-height:1.32; margin: 28px 0 0; max-width: 28ch;">Leadership sees what changed, what is stuck, and what needs judgment.</p>
+            <hr class="rule" style="margin: 36px 0;" />
+            <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); margin-bottom:14px;">Replaces</div>
+            <p style="font-size:24px; line-height:1.4; color:var(--ink); margin: 0;">The weekly status-gathering meeting. The brief is generated from live system data and exported as PDF or email.</p>
+            <hr class="rule" style="margin: 32px 0;" />
+            <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); margin-bottom:14px;">Audience</div>
+            <p style="font-size:24px; line-height:1.4; color:var(--ink); margin: 0;">Founders, BD lead, preconstruction, ops, capital.</p>
+          </div>
+
+          <div class="mock" style="height: 880px;">
+            <div class="mock-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="crumb">Executive brief <i>·</i> Week of Mar 17, 2026</span>
+              <span class="right"><span class="pill">PDF</span></span>
+            </div>
+            <div style="padding: 32px 40px 36px; flex:1; display:flex; flex-direction:column; gap: 22px; min-height: 0;">
+              <div style="display:flex; align-items:baseline; gap: 24px;">
+                <div style="font-size:38px; font-weight:700;">Week of Mar 17</div>
+                <div style="font-size:24px; color:var(--muted);">4 new signals · 2 RFQs due · 3 awaiting approval · 1 stuck</div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; flex:1; min-height:0;">
+
+                <!-- Changed -->
+                <div style="border: 1px solid var(--line); padding: 24px 24px; display:flex; flex-direction:column; min-height:0;">
+                  <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 18px;"><span style="width:14px; height:14px; background:var(--accent);"></span><div style="font-size:26px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent);">Changed</div></div>
+                  <div style="display:flex; flex-direction:column; gap:18px; font-size:24px; line-height:1.4;">
+                    <div><b>Carter — Cedar Park HGI</b><div style="color:var(--muted); margin-top:6px;">Moved to pursue. Score 0.84.</div></div>
+                    <div><b>Hyatt Place — Q4 list</b><div style="color:var(--muted); margin-top:6px;">3 new sites surfaced from franchise filing.</div></div>
+                    <div><b>Plano closeout</b><div style="color:var(--muted); margin-top:6px;">FF&amp;E variance approved. Project on track.</div></div>
+                    <div><b>Plan review — West Loop</b><div style="color:var(--muted); margin-top:6px;">Variance hearing scheduled Apr 4.</div></div>
+                  </div>
+                </div>
+
+                <!-- Stuck -->
+                <div style="border: 1px solid var(--line); padding: 24px 24px; display:flex; flex-direction:column; min-height:0;">
+                  <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 18px;"><span style="width:14px; height:14px; background:var(--gold);"></span><div style="font-size:26px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--gold);">Stuck</div></div>
+                  <div style="display:flex; flex-direction:column; gap:18px; font-size:24px; line-height:1.4;">
+                    <div><b>Westwell Dallas RFQ</b><div style="color:var(--muted); margin-top:6px;">Awaiting Phase II ESA · 6 days from deadline.</div></div>
+                    <div><b>Permit — Houston 4th Ward</b><div style="color:var(--muted); margin-top:6px;">38 days in plan review. Owner unclear.</div></div>
+                    <div><b>Frisco AC punch-list</b><div style="color:var(--muted); margin-top:6px;">Subcontractor follow-up overdue 11 days.</div></div>
+                  </div>
+                </div>
+
+                <!-- Needs decision -->
+                <div style="border: 1px solid var(--line); padding: 24px 24px; display:flex; flex-direction:column; min-height:0; background: var(--ink); color: #fff; border-color: var(--ink);">
+                  <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 18px;"><span style="width:14px; height:14px; background:#ff8a73;"></span><div style="font-size:26px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#ff8a73;">Needs decision</div></div>
+                  <div style="display:flex; flex-direction:column; gap:18px; font-size:24px; line-height:1.4; color:rgba(255,255,255,0.85);">
+                    <div><b style="color:#fff;">Westwell submit decision</b><div style="margin-top:6px;">Recommend pursue with conditions. Approver M. Levin.</div></div>
+                    <div><b style="color:#fff;">Cedar Park concrete award</b><div style="margin-top:6px;">Hartwell vs. two alternates. Approver D. Pham.</div></div>
+                    <div><b style="color:#fff;">Naperville TI pass</b><div style="margin-top:6px;">Capacity-driven. Drafted relationship-sensitive note.</div></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 14 — ROI MODEL ============ -->
+    <section data-label="16 ROI model">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 06</span><span style="margin:0 18px;color:var(--line);">/</span>Value model</span>
+          <span class="num">16 / 18</span>
+        </div>
+
+        <div style="margin-top:56px; flex:1; display:flex; flex-direction:column;">
+          <h2 class="title">ROI model.</h2>
+          <p class="subtitle" style="margin-top: 36px; max-width: 64ch;">Operational first. Strategic second. Compounding third. Avoid framing this only as labor savings — the larger value is discipline, speed, fewer blind spots, and proprietary memory.</p>
+
+          <div style="margin-top: 72px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; flex: 1; align-content:start;">
+
+            <div class="mock" style="padding: 36px 40px; display:flex; flex-direction:column;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 28px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--accent);">Layer 01</div>
+                <div style="font-size:24px; color:var(--muted);">Near-term</div>
+              </div>
+              <div style="font-size:44px; font-weight:800; line-height:1.05;">Operational ROI</div>
+              <p style="font-size:25px; color:var(--ink); line-height:1.35; margin: 22px 0 0;">Less admin. Fewer missed deadlines. Faster RFQ review.</p>
+              <hr class="rule" style="margin: 28px 0;" />
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:14px;">Proof metrics</div>
+              <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: 14px; font-size:24px; line-height:1.35;">
+                <li><span class="square"></span>Hours saved per pursuit</li>
+                <li><span class="square"></span>Overdue tasks per week</li>
+                <li><span class="square"></span>RFQ cycle time</li>
+              </ul>
+            </div>
+
+            <div class="mock" style="padding: 36px 40px; display:flex; flex-direction:column;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 28px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--gold);">Layer 02</div>
+                <div style="font-size:24px; color:var(--muted);">Mid-term</div>
+              </div>
+              <div style="font-size:44px; font-weight:800; line-height:1.05;">Strategic ROI</div>
+              <p style="font-size:25px; color:var(--ink); line-height:1.35; margin: 22px 0 0;">Better selectivity. Stronger relationship leverage. Sharper pursuit mix.</p>
+              <hr class="rule" style="margin: 28px 0;" />
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:14px;">Proof metrics</div>
+              <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: 14px; font-size:24px; line-height:1.35;">
+                <li><span class="square gold"></span>Win rate by score band</li>
+                <li><span class="square gold"></span>Pass-decision accuracy</li>
+                <li><span class="square gold"></span>Source-to-conversion ratio</li>
+              </ul>
+            </div>
+
+            <div class="mock" style="padding: 36px 40px; display:flex; flex-direction:column; background: var(--ink); color: #fff; border-color: var(--ink);">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 28px;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#6dd0b9;">Layer 03</div>
+                <div style="font-size:24px; color:rgba(255,255,255,0.55);">Compounding</div>
+              </div>
+              <div style="font-size:44px; font-weight:800; line-height:1.05;">Enterprise ROI</div>
+              <p style="font-size:25px; color:rgba(255,255,255,0.8); line-height:1.35; margin: 22px 0 0;">A Level-owned operating memory that improves every cycle.</p>
+              <hr style="height:1px; background: rgba(255,255,255,0.16); border:0; margin: 28px 0;" />
+              <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:14px;">Proof metrics</div>
+              <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: 14px; font-size:24px; line-height:1.35; color:rgba(255,255,255,0.88);">
+                <li><span class="square"></span>Data completeness across pursuits</li>
+                <li><span class="square"></span>Reuse of past decisions</li>
+                <li><span class="square"></span>Scoring improvement over time</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 15 — PILOT ============ -->
+    <section data-label="17 90-day pilot">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 07</span><span style="margin:0 18px;color:var(--line);">/</span>Engagement</span>
+          <span class="num">17 / 18</span>
+        </div>
+
+        <div style="margin-top:56px; flex:1; display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap: 64px; align-items:end;">
+            <h2 class="title">The 90-day pilot.</h2>
+            <p class="subtitle" style="max-width: 36ch;">A contained engagement with visible operating value. Each phase ships a usable product surface, not a memo.</p>
+          </div>
+
+          <div style="margin-top: 72px; flex:1; display:flex; flex-direction:column;">
+            <!-- timeline rule -->
+            <div style="position: relative; height: 4px; background: var(--line); margin: 0 0 0 0;">
+              <div style="position:absolute; left:0; top:0; width: 100%; height:4px; background: linear-gradient(to right, var(--accent) 0%, var(--accent) 100%); opacity:0.25;"></div>
+              <div style="position:absolute; left:calc(12.5% - 12px); top:-10px; width: 24px; height:24px; background: var(--accent); border-radius:50%;"></div>
+              <div style="position:absolute; left:calc(37.5% - 12px); top:-10px; width: 24px; height:24px; background: var(--accent); border-radius:50%;"></div>
+              <div style="position:absolute; left:calc(62.5% - 12px); top:-10px; width: 24px; height:24px; background: var(--accent); border-radius:50%;"></div>
+              <div style="position:absolute; left:calc(87.5% - 12px); top:-10px; width: 24px; height:24px; background: var(--accent); border-radius:50%;"></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 28px; margin-top: 48px;">
+              <div class="mock" style="padding: 28px 30px; min-height: 380px; display:flex; flex-direction:column;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted-2);">Weeks 1–2</div>
+                <div style="font-size:40px; font-weight:800; margin-top:14px;">Foundation</div>
+                <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 16px 0 0;">Data model, roles, active opportunities, account/contact views, executive dashboard skeleton.</p>
+                <hr class="rule" style="margin: 22px 0 18px;" />
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:10px;">Ships</div>
+                <div style="font-size:24px; line-height:1.4;">Pipeline view · account index</div>
+              </div>
+
+              <div class="mock" style="padding: 28px 30px; min-height: 380px; display:flex; flex-direction:column;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted-2);">Weeks 3–5</div>
+                <div style="font-size:40px; font-weight:800; margin-top:14px;">Intelligence</div>
+                <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 16px 0 0;">Signal inbox, opportunity summaries, qualification scoring, relationship briefs, first weekly digest.</p>
+                <hr class="rule" style="margin: 22px 0 18px;" />
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:10px;">Ships</div>
+                <div style="font-size:24px; line-height:1.4;">Signal inbox · scorecard</div>
+              </div>
+
+              <div class="mock" style="padding: 28px 30px; min-height: 380px; display:flex; flex-direction:column;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted-2);">Weeks 6–8</div>
+                <div style="font-size:40px; font-weight:800; margin-top:14px;">Workflow</div>
+                <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 16px 0 0;">RFQ command center, deadline extraction, go/no-go memo, approval queue, bid task tracking.</p>
+                <hr class="rule" style="margin: 22px 0 18px;" />
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2); margin-bottom:10px;">Ships</div>
+                <div style="font-size:24px; line-height:1.4;">RFQ center · approvals</div>
+              </div>
+
+              <div class="mock" style="padding: 28px 30px; min-height: 380px; display:flex; flex-direction:column; background: var(--ink); color:#fff; border-color: var(--ink);">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#6dd0b9;">Weeks 9–12</div>
+                <div style="font-size:40px; font-weight:800; margin-top:14px;">Rhythm</div>
+                <p style="font-size:24px; color:rgba(255,255,255,0.78); line-height:1.4; margin: 16px 0 0;">Weekly executive brief, outcome capture, adoption review, phase-two roadmap.</p>
+                <hr style="height:1px; background: rgba(255,255,255,0.18); border:0; margin: 22px 0 18px;" />
+                <div style="font-size:24px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:10px;">Ships</div>
+                <div style="font-size:24px; line-height:1.4;">Brief · pilot report</div>
+              </div>
+            </div>
+
+            <!-- success criteria strip -->
+            <div style="margin-top: auto; padding-top: 56px;">
+              <hr class="rule" />
+              <div style="margin-top: 28px; display:grid; grid-template-columns: 1.1fr repeat(4, 1fr); gap: 24px; align-items:start;">
+                <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2);">Success looks like</div>
+                <div style="font-size:24px; line-height:1.4;">100% of pursuits visible with owner, stage, score, next action, age.</div>
+                <div style="font-size:24px; line-height:1.4;">≥10 useful signals reviewed and routed during the pilot.</div>
+                <div style="font-size:24px; line-height:1.4;">RFQs tracked with deadlines, requirements, go/no-go status.</div>
+                <div style="font-size:24px; line-height:1.4;">Live weekly brief leadership can point to as faster decisions.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ SLIDE 16 — OWNERSHIP AND CLOSE ============ -->
+    <section data-label="18 Ownership and close" class="dark">
+      <div class="frame">
+        <div class="meta">
+          <span><span class="accent">Section 08</span><span style="margin:0 18px;color:rgba(255,255,255,0.2);">/</span>Ownership &amp; close</span>
+          <span class="num">18 / 18</span>
+        </div>
+
+        <div style="margin-top: 56px; flex: 1; display:grid; grid-template-columns: 1.05fr 0.95fr; gap: 96px; align-items: start;">
+          <div>
+            <h2 style="font-size:96px; font-weight:800; line-height:0.96; letter-spacing:-0.025em; margin:0;">Build the system<br/>that makes Level<br/>sharper every week.</h2>
+            <p style="font-size:32px; color:rgba(255,255,255,0.78); line-height:1.3; margin: 44px 0 0; max-width: 30ch; text-wrap: pretty;">The first version creates visibility and decision speed. The long-term version becomes Level's proprietary construction intelligence layer.</p>
+
+            <hr style="height:1px; background: rgba(255,255,255,0.18); border:0; margin: 44px 0 28px;" />
+
+            <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#6dd0b9; margin-bottom: 24px;">Trust principles</div>
+            <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns: 1fr 1fr; gap: 12px 32px; font-size:24px; line-height:1.35; color:rgba(255,255,255,0.85);">
+              <li><span class="square"></span>Level owns its data &amp; operating memory</li>
+              <li><span class="square"></span>Export rights preserved</li>
+              <li><span class="square"></span>AI providers remain replaceable</li>
+              <li><span class="square"></span>Role-based access &amp; audit logs</li>
+              <li><span class="square"></span>Sensitive actions require approval</li>
+              <li><span class="square"></span>No external reuse of Level data</li>
+            </ul>
+          </div>
+
+          <!-- CTA card -->
+          <div>
+            <div style="background: #fff; color: var(--ink); padding: 44px 48px;">
+              <div style="font-size:24px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin-bottom: 20px;">Next step</div>
+              <div style="font-size:54px; font-weight:800; line-height:1.05; letter-spacing:-0.02em;">Approve a 90-day pilot.</div>
+              <p style="font-size:24px; color:var(--muted); line-height:1.4; margin: 24px 0 0;">A focused build with visible operating value at each milestone. Discovery starts inside week one.</p>
+
+              <hr class="rule" style="margin: 36px 0 28px;" />
+
+              <div style="font-size:24px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted-2); margin-bottom: 16px;">Discovery asks</div>
+              <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: 12px; font-size:24px; line-height:1.4;">
+                <li><span class="square"></span>Active opportunity list &amp; pursuit stages</li>
+                <li><span class="square"></span>Sample RFQs and bid packages</li>
+                <li><span class="square"></span>Account / contact export</li>
+                <li><span class="square"></span>Current tools and data sources</li>
+                <li><span class="square"></span>Leadership's weekly reporting format</li>
+                <li><span class="square"></span>Approval rules for outreach, bids, vendors, budget</li>
+              </ul>
+            </div>
+
+            <div style="margin-top: 28px; display:flex; gap: 28px; align-items:center; font-size:26px; color:rgba(255,255,255,0.78); letter-spacing:.05em;">
+              <span style="font-weight:700; color:#fff;">Find.</span>
+              <span>Qualify.</span>
+              <span>Route.</span>
+              <span>Convert.</span>
+              <span style="font-weight:700; color:#fff;">Learn.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </deck-stage>
+</body>
+</html>

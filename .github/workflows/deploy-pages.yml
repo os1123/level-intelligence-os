@@ -1,0 +1,50 @@
+name: Deploy Level Intelligence OS package
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "level-intelligence-os-pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build optional live demo data
+        run: |
+          npm run fetch-data || echo "Data refresh failed in CI, using existing files."
+
+      - name: Build publish site
+        run: npm run share:build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: share-site
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

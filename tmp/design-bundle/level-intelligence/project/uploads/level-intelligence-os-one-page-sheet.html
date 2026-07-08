@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Level Intelligence OS - One Page Sheet</title>
+  <link rel="icon" href="data:," />
+  <style>
+    :root {
+      --ink: #11161d;
+      --muted: #606b77;
+      --line: #d8dde3;
+      --paper: #f7f7f4;
+      --surface: #ffffff;
+      --accent: #0e806c;
+      --dark: #17202b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--paper);
+    }
+
+    .sheet {
+      max-width: 1120px;
+      margin: 0 auto;
+      min-height: 100svh;
+      padding: 26px 34px;
+      display: grid;
+      gap: 15px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: start;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(40px, 5.5vw, 66px);
+      line-height: 0.9;
+      letter-spacing: 0;
+      max-width: 11ch;
+    }
+
+    .summary {
+      max-width: 390px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+      margin: 4px 0 0;
+    }
+
+    .tag {
+      display: inline-grid;
+      place-items: center;
+      width: 74px;
+      height: 74px;
+      border: 2px solid var(--ink);
+      font-weight: 900;
+      font-size: 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 22px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+
+    .section.dark {
+      background: var(--dark);
+      color: #ffffff;
+      border-color: var(--dark);
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.05;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.38;
+    }
+
+    .dark p,
+    .dark li,
+    .dark span {
+      color: rgba(255, 255, 255, 0.74);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 7px;
+    }
+
+    li {
+      position: relative;
+      padding-left: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.32;
+    }
+
+    li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+    }
+
+    .value-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .value {
+      border-top: 2px solid var(--ink);
+      padding-top: 11px;
+      min-height: 100px;
+    }
+
+    .value b {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .value span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .terms {
+      display: grid;
+      gap: 7px;
+    }
+
+    .term {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      padding-top: 7px;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .term:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .term b {
+      color: #ffffff;
+    }
+
+    .loop {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .loop div {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      padding: 10px;
+      min-height: 78px;
+    }
+
+    .loop b {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 7px;
+    }
+
+    .loop span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.28;
+    }
+
+    .footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media print {
+      @page {
+        size: Letter landscape;
+        margin: 0.25in;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      .sheet {
+        max-width: none;
+        min-height: 0;
+        padding: 0;
+        gap: 8px;
+      }
+
+      header {
+        padding-bottom: 7px;
+      }
+
+      h1 {
+        font-size: 38px;
+      }
+
+      .tag {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+      }
+
+      .summary,
+      p,
+      li {
+        font-size: 10px;
+        line-height: 1.22;
+      }
+
+      h2 {
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+
+      .section {
+        padding: 8px;
+      }
+
+      .value {
+        min-height: 58px;
+        padding-top: 5px;
+      }
+
+      .value b,
+      .loop b {
+        font-size: 9px;
+        margin-bottom: 3px;
+      }
+
+      .value span,
+      .loop span {
+        font-size: 8.5px;
+        line-height: 1.18;
+      }
+
+      .loop div {
+        padding: 6px;
+        min-height: 50px;
+      }
+
+      .terms {
+        gap: 3px;
+      }
+
+      .term {
+        grid-template-columns: 96px 1fr;
+        gap: 7px;
+        padding-top: 3px;
+        font-size: 8.5px;
+        line-height: 1.18;
+      }
+
+      .footer {
+        padding-top: 4px;
+        font-size: 8px;
+      }
+
+      .section {
+        break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 860px) {
+      header,
+      .grid,
+      .grid-3,
+      .value-row,
+      .loop,
+      .footer {
+        grid-template-columns: 1fr;
+      }
+
+      .term {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header>
+      <div>
+        <p class="eyebrow">Client one-page dossier</p>
+        <h1>Level Intelligence OS</h1>
+      </div>
+      <div>
+        <div class="tag">LX</div>
+        <p class="summary">A private, agent-native operating layer that converts Level X's analog construction, development, hospitality, and capital knowledge into a compounding digital asset.</p>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>The pain points</h2>
+      <div class="grid-3">
+        <div class="value"><b>Signals are scattered</b><span>Opportunities start in permits, planning, RFQs, brokers, brands, and relationships.</span></div>
+        <div class="value"><b>Judgment is trapped</b><span>Context lives in people, inboxes, spreadsheets, project folders, and memory.</span></div>
+        <div class="value"><b>Leadership chases status</b><span>Executives need exceptions, decisions, risks, and next actions in one place.</span></div>
+      </div>
+    </section>
+
+    <section class="section dark">
+      <h2>Outcomes, not just code</h2>
+      <p>Code is the mechanism. The product is a working operating rhythm: visible pipeline, cleaner RFQ decisions, approval rails, fewer missed follow-ups, weekly executive briefs, and a compounding operating memory that improves every future decision.</p>
+    </section>
+
+    <section class="section">
+      <h2>Feasibility</h2>
+      <div class="grid-3">
+        <div class="value"><b>High feasibility</b><span>Start as an intelligence and workflow layer across current tools, not a rip-and-replace.</span></div>
+        <div class="value"><b>Main risk</b><span>Data quality and adoption. Solve with tight pilot scope, human review, and visible executive usefulness.</span></div>
+        <div class="value"><b>Best wedge</b><span>Opportunity pipeline, relationship memory, RFQ triage, and weekly executive brief in the first 90 days.</span></div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="section">
+        <h2>What Level gets</h2>
+        <ul>
+          <li>Earlier signal detection across permits, planning agendas, title changes, development news, broker notes, franchise expansion, and inbound RFQs.</li>
+          <li>Level-specific qualification scoring across geography, relationship strength, margin potential, entitlement risk, financing fit, and strategic value.</li>
+          <li>Agent workflows for opportunity scouting, relationship briefs, RFQ summaries, go/no-go memos, permit follow-ups, executive briefs, and project handoffs.</li>
+          <li>Human approval rails for external outreach, bid submission, vendor award, budget change, investor communication, and legal/financing decisions.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>Why this matters now</h2>
+        <ul>
+          <li>Software is becoming internal and company-specific again.</li>
+          <li>Language is now a software interface, so messy emails, RFQs, permit comments, and notes can become structured work.</li>
+          <li>Level can add, omit, and reshape workflows faster when it owns the operating layer.</li>
+          <li>Every decision and outcome becomes training material for better future recommendations.</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="section">
+      <h2>Value props</h2>
+      <div class="value-row">
+        <div class="value"><b>Faster pursuit</b><span>Signals become opportunities with owners, scores, and next actions.</span></div>
+        <div class="value"><b>Better margin</b><span>Go/no-go discipline reduces wasted pursuits and highlights risk earlier.</span></div>
+        <div class="value"><b>Lower admin load</b><span>Agents summarize, extract, draft, route, and remind across language-heavy work.</span></div>
+        <div class="value"><b>Outcome delivery</b><span>Success is measured by operating lift, not the existence of a codebase.</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Compounding loop</h2>
+      <div class="loop">
+        <div><b>Capture</b><span>Signals, RFQs, notes, documents, permits, and decisions enter the system.</span></div>
+        <div><b>Structure</b><span>Agents classify, summarize, link records, score fit, and create next actions.</span></div>
+        <div><b>Decide</b><span>Humans approve consequential moves and preserve judgment.</span></div>
+        <div><b>Measure</b><span>Win/loss, margin, delay, response, and relationship outcomes are retained.</span></div>
+        <div><b>Improve</b><span>The next score, brief, alert, and recommendation gets sharper.</span></div>
+      </div>
+    </section>
+
+    <section class="section dark">
+      <h2>Term sheet skeleton</h2>
+      <div class="terms">
+        <div class="term"><b>Engagement</b><span>90-day pilot to design and build Level Intelligence OS v1.</span></div>
+        <div class="term"><b>Pilot scope</b><span>Opportunity pipeline, account/contact layer, signal inbox, qualification scoring, RFQ intake, go/no-go memo, approval queue, weekly executive brief.</span></div>
+        <div class="term"><b>Deliverables</b><span>Data model, working interface, agent workflows, pilot report, success metrics, and phase-two roadmap.</span></div>
+        <div class="term"><b>Ownership</b><span>Level owns its data and generated operating memory. Code/licensing structure to be finalized in agreement.</span></div>
+        <div class="term"><b>Commercial options</b><span>Fixed-fee pilot, build fee plus monthly support, strategy sprint then implementation, or long-term internal software partnership.</span></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>Level Intelligence OS - one-page proposal sheet</span>
+      <span>Draft for discussion</span>
+    </div>
+  </main>
+</body>
+</html>

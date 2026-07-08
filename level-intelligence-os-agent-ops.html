@@ -1,0 +1,2108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Level Intelligence OS — Agent Operations</title>
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --ink: #11161d;
+      --ink-2: #2a323c;
+      --muted: #626d78;
+      --muted-2: #8a96a2;
+      --line: #d8dde3;
+      --line-2: #ebeef2;
+      --paper: #f6f7f4;
+      --paper-2: #efefe9;
+      --surface: #ffffff;
+      --accent: #0d806c;
+      --accent-2: #e2f2ee;
+      --accent-3: #f6fbf9;
+      --gold: #bd8427;
+      --gold-2: #f5e9d2;
+      --blue: #4269d6;
+      --blue-2: #e2eaf6;
+      --purple: #8b5ac2;
+      --dark: #17202b;
+      --risk: #b84a4a;
+      --risk-2: #f6dede;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #0a0d12; height: 100%; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      overflow: hidden;
+    }
+
+    /* fixed canvas + letterbox */
+    #stage {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+    #canvas {
+      width: 1440px;
+      height: 900px;
+      background: var(--paper);
+      color: var(--ink);
+      transform-origin: center center;
+      position: relative;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+
+    /* === header === */
+    .topbar {
+      height: 64px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .brand {
+      display: inline-grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--ink);
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+    .crumb { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .crumb i { color: var(--muted); font-style: normal; font-weight: 400; margin: 0 10px; }
+    .live {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--accent);
+      padding: 4px 10px;
+      background: var(--accent-2);
+    }
+    .live .pulse {
+      width: 8px; height: 8px;
+      background: var(--accent); border-radius: 50%;
+      box-shadow: 0 0 0 0 var(--accent);
+      animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(13,128,108,0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(13,128,108,0); }
+      100% { box-shadow: 0 0 0 0 rgba(13,128,108,0); }
+    }
+    .ctrl-group {
+      display: flex; align-items: center; gap: 4px;
+      margin-left: auto;
+      font-size: 13px;
+    }
+    .icon-btn {
+      width: 32px; height: 32px;
+      display: grid; place-items: center;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .icon-btn:hover { background: var(--paper); }
+    .icon-btn.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .clock {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 13px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      padding: 0 12px;
+    }
+
+    /* === scenarios === */
+    .scenarios {
+      height: 60px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper-2);
+    }
+    .scenarios .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      margin-right: 6px;
+    }
+    .scenario-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .scenario-btn:hover { border-color: var(--ink); }
+    .scenario-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .scenario-btn .play {
+      width: 0; height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 7px solid currentColor;
+    }
+    .scenario-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* === main grid === */
+    .main {
+      height: calc(900px - 64px - 60px);
+      display: grid;
+      grid-template-columns: 1fr 420px;
+    }
+
+    .col-left {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--line);
+      min-height: 0;
+    }
+    .col-right {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--surface);
+    }
+
+    /* === network === */
+    .network {
+      height: 430px;
+      position: relative;
+      background:
+        linear-gradient(var(--line-2) 1px, transparent 1px) 0 0 / 32px 32px,
+        linear-gradient(90deg, var(--line-2) 1px, transparent 1px) 0 0 / 32px 32px,
+        var(--paper);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
+    .net-title {
+      position: absolute;
+      top: 16px; left: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      z-index: 5;
+    }
+    .net-stats {
+      position: absolute;
+      top: 14px; right: 20px;
+      display: flex; gap: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      z-index: 5;
+    }
+    .net-stats b {
+      color: var(--ink);
+      font-feature-settings: "tnum" 1;
+      margin-right: 4px;
+    }
+
+    .agent-node {
+      position: absolute;
+      width: 124px;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+    .agent-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 8px 10px 9px;
+      position: relative;
+      transition: all 0.25s;
+    }
+    .agent-card.working {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-2);
+    }
+    .agent-card.awaiting {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-2);
+    }
+    .agent-card.alert {
+      border-color: var(--risk);
+      box-shadow: 0 0 0 3px var(--risk-2);
+    }
+    .agent-head { display: flex; align-items: center; gap: 7px; }
+    .agent-dot {
+      width: 8px; height: 8px;
+      background: var(--muted-2);
+      border-radius: 50%;
+      flex: 0 0 8px;
+    }
+    .agent-card.working .agent-dot {
+      background: var(--accent);
+      animation: pulse-dot 1.2s infinite;
+    }
+    .agent-card.awaiting .agent-dot { background: var(--gold); }
+    .agent-card.alert .agent-dot { background: var(--risk); }
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.4); }
+    }
+    .agent-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.005em;
+    }
+    .agent-role {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .agent-task {
+      font-size: 11px;
+      color: var(--ink);
+      margin-top: 6px;
+      line-height: 1.32;
+      min-height: 28px;
+      font-style: italic;
+      font-weight: 500;
+    }
+    .agent-task.idle { color: var(--muted-2); font-style: normal; font-weight: 400; }
+    .agent-card.human {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+    .agent-card.human .agent-role { color: rgba(255,255,255,0.5); }
+    .agent-card.human .agent-task { color: rgba(255,255,255,0.78); }
+    .agent-card.human.awaiting {
+      box-shadow: 0 0 0 3px var(--gold-2);
+      border-color: var(--gold);
+    }
+    .agent-card.human.awaiting .agent-dot { background: var(--gold); }
+
+    .edges, .packets {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .edges { z-index: 1; }
+    .packets { z-index: 2; }
+
+    /* === activity log === */
+    .log-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .log-head {
+      padding: 14px 20px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .log-head .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+    }
+    .log-head .count {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+    }
+    .log-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 20px 20px;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 12px;
+      background: var(--surface);
+    }
+    .log-entry {
+      display: grid;
+      grid-template-columns: 72px 96px 1fr;
+      gap: 14px;
+      padding: 7px 0;
+      border-bottom: 1px dashed var(--line-2);
+      align-items: baseline;
+      animation: log-in 0.4s ease-out;
+    }
+    @keyframes log-in {
+      from { opacity: 0; transform: translateY(-4px); background: var(--accent-3); }
+      to { opacity: 1; transform: translateY(0); background: transparent; }
+    }
+    .log-time { color: var(--muted-2); font-variant-numeric: tabular-nums; }
+    .log-from {
+      font-weight: 600;
+      color: var(--ink);
+      font-family: Inter, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .log-msg {
+      color: var(--ink);
+      line-height: 1.5;
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+    }
+    .log-msg .arrow { color: var(--accent); margin: 0 6px; font-weight: 700; }
+    .log-msg .ent {
+      color: var(--ink);
+      font-weight: 600;
+      background: var(--paper);
+      padding: 1px 5px;
+      border: 1px solid var(--line-2);
+    }
+    .log-entry.event-decide .log-msg { color: var(--accent); font-weight: 600; }
+    .log-entry.event-flag .log-msg { color: var(--risk); }
+    .log-entry.event-approval .log-msg { color: var(--gold); font-weight: 600; }
+
+    /* === right column === */
+    .panel {
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head {
+      padding: 14px 20px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .panel-head .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+    }
+    .panel-head .count {
+      background: var(--ink);
+      color: #fff;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .panel-head .pill {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 3px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    /* approvals */
+    .approval {
+      padding: 14px 20px;
+      border-top: 1px solid var(--line-2);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 4px 12px;
+      align-items: start;
+      animation: log-in 0.4s ease-out;
+    }
+    .approval:first-of-type { border-top: 1px solid var(--line); }
+    .approval-head {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .approval-type {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+    }
+    .approval-type.bid { background: var(--gold-2); color: var(--gold); }
+    .approval-type.outreach { background: var(--blue-2); color: var(--blue); }
+    .approval-type.vendor { background: var(--risk-2); color: var(--risk); }
+    .approval-type.pursue { background: var(--accent-2); color: var(--accent); }
+    .approval-type.pass { background: var(--paper-2); color: var(--muted); }
+    .approval-conf {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .approval-conf b { color: var(--ink); font-weight: 600; }
+    .approval-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.35;
+      margin: 0;
+    }
+    .approval-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .approval-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .approval-actions button {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .approval-actions button.primary {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+    .approval-actions button.primary:hover { background: var(--accent); border-color: var(--accent); }
+
+    /* brief preview */
+    .brief {
+      padding: 14px 20px 18px;
+    }
+    .brief-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .brief-cell {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+    }
+    .brief-cell .k {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+    }
+    .brief-cell .v {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .brief-cell.green .v { color: var(--accent); }
+    .brief-cell.gold .v { color: var(--gold); }
+    .brief-cell.risk .v { color: var(--risk); }
+    .brief-cell .x {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .brief-headlines {
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .brief-headlines .row {
+      display: grid;
+      grid-template-columns: 14px 1fr;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--line-2);
+      align-items: start;
+    }
+    .brief-headlines .row:last-child { border-bottom: 0; }
+    .brief-headlines .sq {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      margin-top: 5px;
+    }
+    .brief-headlines .sq.gold { background: var(--gold); }
+    .brief-headlines .sq.risk { background: var(--risk); }
+    .brief-headlines b { font-weight: 600; }
+
+    /* video slot */
+    .video-slot {
+      flex: 1;
+      min-height: 0;
+      padding: 14px 20px 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .video-frame {
+      flex: 1;
+      min-height: 0;
+      background: linear-gradient(135deg, #1a2330 0%, #0f161f 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #2a323c;
+    }
+    .video-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(13,128,108,0.18), transparent 50%),
+                  radial-gradient(circle at 70% 70%, rgba(66,105,214,0.12), transparent 50%);
+    }
+    .video-frame video, .video-frame iframe {
+      width: 100%; height: 100%; object-fit: cover;
+      position: absolute; inset: 0;
+    }
+    .video-play {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1.5px solid rgba(255,255,255,0.5);
+      display: grid;
+      place-items: center;
+      z-index: 2;
+    }
+    .video-play::after {
+      content: "";
+      width: 0; height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 12px solid #fff;
+      margin-left: 3px;
+    }
+    .video-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+      z-index: 2;
+    }
+    .video-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      z-index: 2;
+      text-align: center;
+      max-width: 26ch;
+      line-height: 1.4;
+    }
+
+    /* tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+    }
+    .tab {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      border: 0;
+      background: transparent;
+      font-family: inherit;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab.on {
+      color: var(--ink);
+      background: var(--surface);
+      border-bottom-color: var(--ink);
+    }
+    .tab .badge {
+      display: inline-block;
+      margin-left: 6px;
+      background: var(--gold);
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      padding: 1px 6px;
+      letter-spacing: 0;
+      font-size: 10px;
+    }
+
+    /* empty states */
+    .empty {
+      padding: 36px 20px;
+      text-align: center;
+      color: var(--muted-2);
+      font-size: 12px;
+    }
+    .empty .ec {
+      font-size: 32px;
+      color: var(--line);
+      margin-bottom: 8px;
+    }
+
+    /* packet animation */
+    .packet {
+      position: absolute;
+      width: auto;
+      max-width: 180px;
+      transform: translate(-50%, -50%);
+      z-index: 4;
+      pointer-events: none;
+    }
+    .packet-body {
+      background: var(--ink);
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      line-height: 1.3;
+      box-shadow: 0 8px 20px -6px rgba(17,22,29,0.4);
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .packet-body.green { background: var(--accent); }
+    .packet-body.gold { background: var(--gold); }
+    .packet-body.risk { background: var(--risk); }
+
+    /* === scaled stage === */
+    .v-fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+
+  <style>
+    /* site nav above the agent-ops canvas */
+    .lx-sitenav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 56px; z-index: 10;
+      background: rgba(10, 13, 18, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 18px;
+      padding: 0 22px;
+      color: #f6f7f4;
+      font-family: Inter, system-ui, sans-serif;
+    }
+    .lx-sitenav .brand {
+      display: inline-grid; place-items: center;
+      width: 30px; height: 30px;
+      border: 1.5px solid #f6f7f4;
+      font-weight: 900; font-size: 12px;
+    }
+    .lx-sitenav .title {
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    .lx-sitenav .sub { color: rgba(246,247,244,0.55); font-size: 13px; font-weight: 500; margin-left: 4px; }
+    .lx-sitenav .spacer { flex: 1; }
+    .lx-sitenav a {
+      color: rgba(246,247,244,0.78);
+      text-decoration: none;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .lx-sitenav a:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .lx-sitenav a.current { background: #f6f7f4; color: #11161d; border-color: #f6f7f4; }
+    #stage { top: 56px !important; }
+  </style>
+
+</head>
+<body>
+  <nav class="lx-sitenav">
+    <span class="brand">LX</span>
+    <span class="title">Level Intelligence OS</span>
+    <span class="sub">· Agent Operations</span>
+    <span class="spacer"></span>
+    <a href="/">Two Paths</a>
+    <a href="/agent-ops" class="current">Agent Ops</a>
+    <a href="/proposition">Proposition</a>
+  </nav>
+
+  <div id="stage">
+    <div id="canvas"></div>
+  </div>
+
+  <script>
+    // letterbox scale
+    function scaleStage() {
+      const c = document.getElementById('canvas');
+      if (!c) return;
+      const s = Math.min(window.innerWidth / 1440, (window.innerHeight - 56) / 900);
+      c.style.transform = `scale(${s})`;
+    }
+    window.addEventListener('resize', scaleStage);
+    setTimeout(scaleStage, 0);
+  </script>
+
+  <script type="text/babel" data-presets="env,react">
+
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-omelette-chrome=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+</script>
+  <script type="text/babel" data-presets="env,react">
+// === Agents ===
+// positions are within network area: 1020w x 430h
+const AGENTS = {
+  scout: {
+    id: 'scout',
+    name: 'Scout',
+    role: 'Signal · detect',
+    x: 130, y: 110,
+    idleTask: 'Watching permits, planning, ownership, broker tips, RFQs',
+  },
+  permit: {
+    id: 'permit',
+    name: 'Permit',
+    role: 'Jurisdiction · monitor',
+    x: 130, y: 310,
+    idleTask: 'Watching plan review queues across 14 jurisdictions',
+  },
+  memory: {
+    id: 'memory',
+    name: 'Memory',
+    role: 'Relationships · context',
+    x: 365, y: 80,
+    idleTask: 'Indexing accounts, contacts, prior pursuits',
+  },
+  qualifier: {
+    id: 'qualifier',
+    name: 'Qualifier',
+    role: 'Score · Level criteria',
+    x: 365, y: 270,
+    idleTask: 'Waiting for opportunities to score',
+  },
+  bid: {
+    id: 'bid',
+    name: 'Bid',
+    role: 'RFQ · go/no-go',
+    x: 615, y: 130,
+    idleTask: 'No active RFQs in extract',
+  },
+  brief: {
+    id: 'brief',
+    name: 'Brief',
+    role: 'Executive · assemble',
+    x: 615, y: 320,
+    idleTask: 'Standing by · next assembly Mon 7:00 AM',
+  },
+  human: {
+    id: 'human',
+    name: 'M. Levin',
+    role: 'Approver · human',
+    x: 850, y: 225,
+    idleTask: 'Mailbox at zero',
+    human: true,
+  },
+};
+
+const EDGES = [
+  ['scout', 'memory'],
+  ['scout', 'qualifier'],
+  ['permit', 'scout'],
+  ['permit', 'qualifier'],
+  ['memory', 'qualifier'],
+  ['memory', 'bid'],
+  ['memory', 'brief'],
+  ['qualifier', 'bid'],
+  ['qualifier', 'brief'],
+  ['bid', 'brief'],
+  ['bid', 'human'],
+  ['brief', 'human'],
+];
+
+// === Scenarios ===
+// Each step:
+//  - at: ms offset from scenario start
+//  - kind: 'set' | 'send' | 'log' | 'approval' | 'brief' | 'clear-approval'
+//  - target / from / to / msg fields depending on kind
+//
+// 'set'     → set agent status: {agent, status: 'idle'|'working'|'awaiting'|'alert', task}
+// 'send'    → animate packet from→to with label; on arrival, recipient becomes 'working' if currently idle
+// 'log'     → append to activity log: {from, msg, level?: 'decide'|'flag'|'approval'}
+// 'approval'→ append approval: {id, type, title, meta, conf, approver, owner}
+// 'brief'   → update brief headline state
+// 'clear'   → set agent back to idle (with optional task)
+
+const SCEN_PERMIT = {
+  id: 'permit-detected',
+  title: 'New permit · Cedar Park HGI',
+  blurb: 'A new construction permit filing surfaces. Watch Scout pick it up, hand to Memory and Qualifier, and Bid prep a pursuit brief.',
+  steps: [
+    { at: 0,    kind: 'log', from: 'permit',    msg: 'New filing: Travis County · HGI Cedar Park · 120-key · applicant Carter Hospitality' },
+    { at: 100,  kind: 'set', agent: 'permit',   status: 'working', task: 'Parsing new filing · Travis County' },
+    { at: 900,  kind: 'send', from: 'permit',   to: 'scout', label: 'Permit · HGI Cedar Park · Carter', tone: 'default' },
+    { at: 1700, kind: 'set', agent: 'scout',    status: 'working', task: 'Deduping against pipeline · classifying' },
+    { at: 1900, kind: 'log', from: 'scout',     msg: 'Dedupe ✓ · not in pipeline · classify → hospitality / new-build' },
+    { at: 2400, kind: 'send', from: 'scout',    to: 'memory', label: 'Who is Carter? Prior work?', tone: 'default' },
+    { at: 3000, kind: 'set', agent: 'memory',   status: 'working', task: 'Carter relationship pull' },
+    { at: 3400, kind: 'log', from: 'memory',    msg: '<b>Carter Hospitality Group</b> · strength 0.78 · 3 prior bids · 2 wins · last touch 14d (James Carter, design phase)' },
+    { at: 4000, kind: 'send', from: 'memory',   to: 'qualifier', label: 'Carter context attached', tone: 'default' },
+    { at: 4400, kind: 'set', agent: 'qualifier',status: 'working', task: 'Scoring against 10 Level criteria' },
+    { at: 5200, kind: 'log', from: 'qualifier', msg: 'Geo 0.92 · Asset 0.88 · Relationship 0.78 · Margin 0.62 · Capacity Q4 0.70 · Strategic 0.88' },
+    { at: 5700, kind: 'log', from: 'qualifier', msg: '<b>Score 0.84</b> · pursue · high confidence · comparable: Plano HGI (won, 0.81)', level: 'decide' },
+    { at: 6200, kind: 'set', agent: 'qualifier',status: 'idle', task: 'Score posted · awaiting next signal' },
+    { at: 6200, kind: 'set', agent: 'memory',   status: 'idle' },
+    { at: 6300, kind: 'send', from: 'qualifier',to: 'bid', label: 'Draft pursuit brief · 0.84', tone: 'green' },
+    { at: 6800, kind: 'set', agent: 'bid',      status: 'working', task: 'Drafting pursuit brief · Cedar Park' },
+    { at: 7800, kind: 'log', from: 'bid',       msg: 'Pursuit brief drafted · 2 questions for Carter (mobilization window, FF&E lead)' },
+    { at: 8300, kind: 'send', from: 'bid',      to: 'brief', label: 'New pursuit · feed Mon brief', tone: 'default' },
+    { at: 8800, kind: 'brief', signals: 4, rfqs: 2, approvals: 1, stuck: 1 },
+    { at: 8800, kind: 'set', agent: 'brief',    status: 'working', task: 'Updating weekly brief' },
+    { at: 9400, kind: 'set', agent: 'brief',    status: 'idle',    task: 'Brief updated · next push Mon 7:00 AM' },
+    { at: 9500, kind: 'send', from: 'bid',      to: 'human', label: 'Approve: move to pursue', tone: 'gold' },
+    { at: 10100, kind: 'set', agent: 'human',   status: 'awaiting', task: '1 approval waiting · Cedar Park HGI · move to pursue' },
+    { at: 10100, kind: 'set', agent: 'bid',     status: 'idle', task: 'Awaiting approver · M. Levin' },
+    { at: 10100, kind: 'set', agent: 'permit',  status: 'idle' },
+    { at: 10100, kind: 'set', agent: 'scout',   status: 'idle' },
+    { at: 10100, kind: 'approval', approval: {
+      id: 'apr-cedar', type: 'pursue', tone: 'pursue',
+      title: 'Move Cedar Park HGI to pursue',
+      meta: 'Score 0.84 · Carter relationship · capacity confirmed · 2 open questions',
+      conf: '0.84', approver: 'M. Levin', owner: 'S. Reyes',
+    }},
+    { at: 10100, kind: 'log', from: 'system',  msg: 'Approval queued · M. Levin · Cedar Park HGI', level: 'approval' },
+  ],
+};
+
+const SCEN_RFQ = {
+  id: 'rfq-arrives',
+  title: 'RFQ inbound · Westwell Dallas',
+  blurb: 'A 128-page RFQ lands in the BD inbox. Bid extracts requirements; Memory finds comparables; Qualifier scores; risks flagged.',
+  steps: [
+    { at: 0,    kind: 'log', from: 'bid',      msg: 'Inbound RFQ · Westwell Hotels · Dallas TI repositioning · 128 pages · ESA missing' },
+    { at: 100,  kind: 'set', agent: 'bid',     status: 'working', task: 'Extracting requirements from 128-page package' },
+    { at: 1200, kind: 'log', from: 'bid',      msg: 'Scope · 85-key TI · select → upscale · Mobilize <b>Sep 1</b> · TCO <b>Apr 15</b>' },
+    { at: 1800, kind: 'log', from: 'bid',      msg: 'Bonding 100% P&amp;P · <b>$14M ceiling</b> · Insurance $10M umbrella · hospitality endorsement' },
+    { at: 2400, kind: 'send', from: 'bid',     to: 'memory', label: 'History with Westwell?', tone: 'default' },
+    { at: 2900, kind: 'set', agent: 'memory',  status: 'working', task: 'Westwell + comparable Dallas TI' },
+    { at: 3500, kind: 'log', from: 'memory',   msg: 'No prior Westwell work · comparable: Frisco AC TI (2024, won, on-schedule) · same operator pattern' },
+    { at: 4000, kind: 'send', from: 'memory',  to: 'qualifier', label: 'Comparables attached', tone: 'default' },
+    { at: 4400, kind: 'set', agent: 'qualifier', status: 'working', task: 'Scoring against Level criteria' },
+    { at: 5300, kind: 'log', from: 'qualifier',msg: 'Score <b>0.71</b> · pursue with conditions · margin sensitivity gold · entitlement gold', level: 'decide' },
+    { at: 5800, kind: 'send', from: 'qualifier', to: 'bid', label: 'Score 0.71 · conditions', tone: 'gold' },
+    { at: 6300, kind: 'set', agent: 'bid',     status: 'alert', task: 'Flagging schedule + FF&E lead risk' },
+    { at: 6900, kind: 'log', from: 'bid',      msg: '<b>Risk</b> · 7-month duration tight given brand-standard FF&amp;E lead times', level: 'flag' },
+    { at: 7400, kind: 'log', from: 'bid',      msg: '<b>Missing</b> · Phase II ESA not in package · request before bid', level: 'flag' },
+    { at: 8000, kind: 'set', agent: 'bid',     status: 'working', task: 'Drafting go/no-go memo' },
+    { at: 8800, kind: 'log', from: 'bid',      msg: 'Go/no-go memo drafted · <b>recommend pursue with conditions</b>', level: 'decide' },
+    { at: 9200, kind: 'send', from: 'bid',     to: 'human', label: 'Approve: submit memo + bid', tone: 'gold' },
+    { at: 9800, kind: 'send', from: 'bid',     to: 'brief', label: 'RFQ added · due in 6d', tone: 'default' },
+    { at: 9900, kind: 'brief', signals: 4, rfqs: 2, approvals: 2, stuck: 1 },
+    { at: 10000, kind: 'set', agent: 'human',  status: 'awaiting', task: '2 approvals waiting · Westwell submit + Cedar Park' },
+    { at: 10000, kind: 'set', agent: 'bid',    status: 'idle', task: 'Awaiting approver · M. Levin' },
+    { at: 10000, kind: 'set', agent: 'memory', status: 'idle' },
+    { at: 10000, kind: 'set', agent: 'qualifier', status: 'idle' },
+    { at: 10000, kind: 'set', agent: 'brief',  status: 'idle' },
+    { at: 10000, kind: 'approval', approval: {
+      id: 'apr-westwell', type: 'bid', tone: 'bid',
+      title: 'Submit Westwell Dallas RFQ with conditions',
+      meta: 'Memo drafted · 25-page submission · technical + price · ESA pending',
+      conf: '0.71', approver: 'M. Levin', owner: 'L. Park',
+    }},
+    { at: 10000, kind: 'log', from: 'system', msg: 'Approval queued · M. Levin · Westwell submit', level: 'approval' },
+  ],
+};
+
+const SCEN_BROKER = {
+  id: 'broker-tip',
+  title: 'Broker tip · Schaumburg AC',
+  blurb: 'A broker forwards a soft lead. Scout dedupes, Memory finds the connection, Qualifier weighs it. Outreach is queued for human approval.',
+  steps: [
+    { at: 0,    kind: 'log', from: 'scout',   msg: 'Inbound broker email · "AC Marriott franchisee, Schaumburg, RFQ in 60–90d"' },
+    { at: 100,  kind: 'set', agent: 'scout',  status: 'working', task: 'Parsing email · entity extraction' },
+    { at: 1100, kind: 'log', from: 'scout',   msg: 'Entities · operator: AC Marriott · location: Schaumburg, IL · source: J. Harlow (CBRE)' },
+    { at: 1500, kind: 'send', from: 'scout',  to: 'memory', label: 'Connection in Schaumburg?', tone: 'default' },
+    { at: 2000, kind: 'set', agent: 'memory', status: 'working', task: 'Searching relationship graph' },
+    { at: 2700, kind: 'log', from: 'memory',  msg: 'Adjacent contact · <b>D. Tan</b> (Carter, ex-AC Hotels) · 2-hop · last touch 38d' },
+    { at: 3300, kind: 'send', from: 'memory', to: 'qualifier', label: 'Early-stage · score?', tone: 'default' },
+    { at: 3800, kind: 'set', agent: 'qualifier', status: 'working', task: 'Light score · early signal' },
+    { at: 4600, kind: 'log', from: 'qualifier', msg: 'Score <b>0.58</b> · watch · geography moderate · would lift to pursue if RFQ confirms' },
+    { at: 5200, kind: 'send', from: 'qualifier', to: 'brief', label: 'Add to watchlist · 0.58', tone: 'default' },
+    { at: 5700, kind: 'set', agent: 'brief',  status: 'working', task: 'Adding to watchlist' },
+    { at: 6400, kind: 'set', agent: 'brief',  status: 'idle',    task: 'Watchlist updated' },
+    { at: 6500, kind: 'send', from: 'memory', to: 'human', label: 'Approve: warm intro via D. Tan', tone: 'gold' },
+    { at: 7000, kind: 'set', agent: 'human',  status: 'awaiting', task: 'Outreach approval · D. Tan warm intro' },
+    { at: 7100, kind: 'set', agent: 'scout',  status: 'idle' },
+    { at: 7100, kind: 'set', agent: 'memory', status: 'idle' },
+    { at: 7100, kind: 'set', agent: 'qualifier', status: 'idle' },
+    { at: 7100, kind: 'approval', approval: {
+      id: 'apr-schaumburg', type: 'outreach', tone: 'outreach',
+      title: 'Warm intro to AC Marriott franchisee · Schaumburg',
+      meta: 'Via D. Tan (Carter) · drafted intro attached · est. RFQ 60–90d',
+      conf: '0.58', approver: 'S. Reyes', owner: 'S. Reyes',
+    }},
+    { at: 7100, kind: 'log', from: 'system', msg: 'Approval queued · S. Reyes · Schaumburg warm intro', level: 'approval' },
+  ],
+};
+
+const SCEN_BRIEF = {
+  id: 'weekly-brief',
+  title: 'Weekly executive brief',
+  blurb: 'Monday morning. Brief polls every agent, assembles changes, stucks, and decisions, and pushes the executive PDF.',
+  steps: [
+    { at: 0,    kind: 'log', from: 'brief',  msg: 'Weekly cycle started · assembling brief for week of Mar 17' },
+    { at: 100,  kind: 'set', agent: 'brief', status: 'working', task: 'Polling agents · last 7d' },
+    { at: 600,  kind: 'send', from: 'brief', to: 'scout', label: 'New signals last 7d?', tone: 'default' },
+    { at: 1100, kind: 'set', agent: 'scout', status: 'working', task: 'Returning 4 new signals' },
+    { at: 1600, kind: 'log', from: 'scout',  msg: '4 new signals · Cedar Park HGI, Westwell, Schaumburg AC, West Loop' },
+    { at: 1800, kind: 'send', from: 'brief', to: 'qualifier', label: 'Score changes?', tone: 'default' },
+    { at: 2300, kind: 'set', agent: 'qualifier', status: 'working', task: 'Returning score deltas' },
+    { at: 2800, kind: 'log', from: 'qualifier', msg: 'Score deltas · Cedar Park 0.84 (new) · Naperville TI 0.61 → 0.55 (capacity)' },
+    { at: 3000, kind: 'send', from: 'brief', to: 'bid', label: 'Active RFQs?', tone: 'default' },
+    { at: 3500, kind: 'set', agent: 'bid',   status: 'working', task: 'Returning 2 active RFQs' },
+    { at: 4000, kind: 'log', from: 'bid',    msg: '2 active RFQs · Westwell due 6d (decision pending) · Hyatt Place due 14d' },
+    { at: 4200, kind: 'send', from: 'brief', to: 'memory', label: 'Stuck relationships?', tone: 'default' },
+    { at: 4700, kind: 'set', agent: 'memory',status: 'working', task: 'Returning 1 stuck' },
+    { at: 5200, kind: 'log', from: 'memory', msg: '1 stuck · Westwell awaiting ESA clarification (6 days)', level: 'flag' },
+    { at: 5400, kind: 'send', from: 'brief', to: 'permit', label: 'Permits surfacing?', tone: 'default' },
+    { at: 5800, kind: 'set', agent: 'permit',status: 'working', task: 'Returning permit changes' },
+    { at: 6200, kind: 'log', from: 'permit', msg: 'West Loop variance hearing scheduled Apr 4 · plan review in queue 38d' },
+    { at: 6500, kind: 'set', agent: 'scout',    status: 'idle' },
+    { at: 6500, kind: 'set', agent: 'qualifier',status: 'idle' },
+    { at: 6500, kind: 'set', agent: 'bid',      status: 'idle' },
+    { at: 6500, kind: 'set', agent: 'memory',   status: 'idle' },
+    { at: 6500, kind: 'set', agent: 'permit',   status: 'idle' },
+    { at: 6700, kind: 'log', from: 'brief',  msg: 'Assembling · changed (4) · stuck (1) · decide (1)' },
+    { at: 7400, kind: 'brief', signals: 4, rfqs: 2, approvals: 1, stuck: 1 },
+    { at: 7500, kind: 'log', from: 'brief',  msg: '<b>Brief assembled</b> · pushed to founders + BD + precon + ops + capital', level: 'decide' },
+    { at: 8000, kind: 'send', from: 'brief', to: 'human', label: 'Brief ready · 1 decision needed', tone: 'gold' },
+    { at: 8500, kind: 'set', agent: 'human', status: 'awaiting', task: 'Review brief · 1 decision · Cedar Park pursue' },
+    { at: 8500, kind: 'set', agent: 'brief', status: 'idle',     task: 'Brief delivered · next cycle Mon 7:00 AM' },
+  ],
+};
+
+const SCENARIOS = [SCEN_PERMIT, SCEN_RFQ, SCEN_BROKER, SCEN_BRIEF];
+
+Object.assign(window, { AGENTS, EDGES, SCENARIOS });
+
+</script>
+  <script type="text/babel" data-presets="env,react">
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+// ===== utility =====
+const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+const lerp = (a, b, t) => a + (b - a) * t;
+
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function formatClock(baseMs, vt) {
+  // baseMs: real start, vt: virtual ms elapsed. Show time-of-day starting at 14:32:08.
+  const totalSec = Math.floor((baseMs + vt) / 1000);
+  const h = (Math.floor(totalSec / 3600)) % 24;
+  const m = Math.floor((totalSec / 60) % 60);
+  const s = totalSec % 60;
+  return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+}
+function formatLogTime(baseMs, vt) {
+  return formatClock(baseMs, vt);
+}
+
+// ===== ticker (virtual clock) =====
+function useTicker(paused, speed) {
+  const [vt, setVt] = useState(0);
+  useEffect(() => {
+    let raf, last = performance.now();
+    const loop = () => {
+      const now = performance.now();
+      const dt = Math.min(50, now - last); // clamp big gaps
+      last = now;
+      if (!paused) setVt(t => t + dt * speed);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [paused, speed]);
+  return vt;
+}
+
+// ===== top bar =====
+function TopBar({ vt, paused, speed, onToggle, onSpeed, onReset, runningCount }) {
+  // baseClock: 14:32:08
+  const baseMs = (14 * 3600 + 32 * 60 + 8) * 1000;
+  const clock = formatClock(baseMs, vt);
+  return (
+    <div className="topbar">
+      <span className="brand">LX</span>
+      <span className="crumb">
+        Level Intelligence OS <i>·</i> Agent Operations
+      </span>
+      <span className="live">
+        <span className="pulse"></span> live
+      </span>
+      {runningCount > 0 && (
+        <span style={{ fontSize: 12, color: 'var(--muted)' }}>
+          {runningCount} scenario{runningCount > 1 ? 's' : ''} running
+        </span>
+      )}
+      <div className="ctrl-group">
+        <span className="clock">{clock} <span style={{ color: 'var(--muted-2)', marginLeft: 6 }}>CDT</span></span>
+        <button className="icon-btn" onClick={onToggle} title={paused ? 'Play' : 'Pause'}>
+          {paused ? '▶' : '❚❚'}
+        </button>
+        {[0.5, 1, 2, 4].map(s => (
+          <button key={s} className={'icon-btn' + (speed === s ? ' on' : '')} style={{ width: 38, fontSize: 11, fontWeight: 600 }} onClick={() => onSpeed(s)}>
+            {s}×
+          </button>
+        ))}
+        <button className="icon-btn" onClick={onReset} title="Reset" style={{ marginLeft: 8 }}>↺</button>
+      </div>
+    </div>
+  );
+}
+
+// ===== scenarios row =====
+function ScenarioRow({ onTrigger, runningIds }) {
+  return (
+    <div className="scenarios">
+      <span className="label">Trigger</span>
+      {SCENARIOS.map(sc => (
+        <button
+          key={sc.id}
+          className={'scenario-btn' + (runningIds.includes(sc.id) ? ' active' : '')}
+          onClick={() => onTrigger(sc)}
+          title={sc.blurb}
+        >
+          <span className="play"></span>
+          {sc.title}
+        </button>
+      ))}
+      <div style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--muted-2)', maxWidth: 320, textAlign: 'right', lineHeight: 1.4 }}>
+        Click a trigger to start a scenario. Stack them to see the agents work in parallel.
+      </div>
+    </div>
+  );
+}
+
+// ===== agent network =====
+const NET_W = 1020;
+const NET_H = 430;
+
+function Edge({ a, b, active }) {
+  return (
+    <line
+      x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+      stroke={active ? 'var(--accent)' : 'var(--line)'}
+      strokeWidth={active ? 1.5 : 1}
+      strokeDasharray={active ? '0' : '4 4'}
+      opacity={active ? 0.9 : 0.6}
+    />
+  );
+}
+
+function AgentCard({ agent, state }) {
+  const status = state?.status || 'idle';
+  const task = state?.task || agent.idleTask;
+  return (
+    <div className="agent-node" style={{ left: agent.x, top: agent.y }}>
+      <div className={'agent-card ' + status + (agent.human ? ' human' : '')}>
+        <div className="agent-head">
+          <span className="agent-dot"></span>
+          <div style={{ flex: 1 }}>
+            <div className="agent-name">{agent.name}</div>
+            <div className="agent-role">{agent.role}</div>
+          </div>
+        </div>
+        <div className={'agent-task' + (status === 'idle' ? ' idle' : '')}>{task}</div>
+      </div>
+    </div>
+  );
+}
+
+function Packet({ packet, vt }) {
+  const { from, to, label, tone, startVt, duration } = packet;
+  const t = Math.max(0, Math.min(1, (vt - startVt) / duration));
+  const e = easeOutCubic(t);
+  // slight arc: bend perpendicular by sin(πt) * amount
+  const dx = to.x - from.x, dy = to.y - from.y;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  const nx = -dy / len, ny = dx / len;
+  const bend = Math.min(30, len * 0.08);
+  const cx = lerp(from.x, to.x, e) + nx * bend * Math.sin(Math.PI * t);
+  const cy = lerp(from.y, to.y, e) + ny * bend * Math.sin(Math.PI * t);
+  // fade in/out at ends
+  let opacity = 1;
+  if (t < 0.12) opacity = t / 0.12;
+  else if (t > 0.85) opacity = (1 - t) / 0.15;
+  return (
+    <div className="packet" style={{ left: cx, top: cy, opacity }}>
+      <div className={'packet-body' + (tone && tone !== 'default' ? ' ' + tone : '')}>{label}</div>
+    </div>
+  );
+}
+
+function Network({ agentStates, activePackets, vt }) {
+  // active edge set: any edge with a packet on it (either direction)
+  const activeEdges = useMemo(() => {
+    const s = new Set();
+    activePackets.forEach(p => {
+      s.add(p.fromId + '|' + p.toId);
+      s.add(p.toId + '|' + p.fromId);
+    });
+    return s;
+  }, [activePackets]);
+
+  return (
+    <div className="network">
+      <div className="net-title">Agent network</div>
+      <div className="net-stats">
+        <span><b>{Object.values(agentStates).filter(s => s.status === 'working').length}</b> working</span>
+        <span><b>{Object.values(agentStates).filter(s => s.status === 'awaiting').length}</b> awaiting</span>
+        <span><b>{activePackets.length}</b> in flight</span>
+      </div>
+
+      <svg className="edges" viewBox={`0 0 ${NET_W} ${NET_H}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
+        {EDGES.map(([aId, bId], i) => {
+          const a = AGENTS[aId], b = AGENTS[bId];
+          const active = activeEdges.has(aId + '|' + bId);
+          return <Edge key={i} a={a} b={b} active={active} />;
+        })}
+      </svg>
+
+      <div className="packets">
+        {activePackets.map(p => (
+          <Packet
+            key={p.id}
+            vt={vt}
+            packet={{
+              from: AGENTS[p.fromId],
+              to: AGENTS[p.toId],
+              label: p.label,
+              tone: p.tone,
+              startVt: p.startVt,
+              duration: p.duration,
+            }}
+          />
+        ))}
+      </div>
+
+      {Object.values(AGENTS).map(agent => (
+        <AgentCard key={agent.id} agent={agent} state={agentStates[agent.id]} />
+      ))}
+    </div>
+  );
+}
+
+// ===== log =====
+function LogEntry({ entry, baseMs }) {
+  const from = AGENTS[entry.from];
+  const fromName = from ? from.name : (entry.from === 'system' ? 'System' : entry.from);
+  return (
+    <div className={'log-entry event-' + (entry.level || 'info')}>
+      <div className="log-time">{formatLogTime(baseMs, entry.atVt)}</div>
+      <div className="log-from">{fromName}</div>
+      <div className="log-msg" dangerouslySetInnerHTML={{ __html: entry.msg }}></div>
+    </div>
+  );
+}
+
+function LogPanel({ log, baseMs }) {
+  const bodyRef = useRef(null);
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    }
+  }, [log.length]);
+
+  return (
+    <div className="log-wrap">
+      <div className="log-head">
+        <span className="label">Activity stream</span>
+        <span className="count">{log.length} events</span>
+      </div>
+      <div className="log-body" ref={bodyRef}>
+        {log.length === 0 ? (
+          <div className="empty">
+            <div className="ec">—</div>
+            No activity yet. Trigger a scenario above to see the agents work.
+          </div>
+        ) : (
+          log.map(e => <LogEntry key={e.id} entry={e} baseMs={baseMs} />)
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ===== right column =====
+function ApprovalsList({ approvals, onResolve }) {
+  if (approvals.length === 0) {
+    return (
+      <div className="empty">
+        <div className="ec">○</div>
+        No approvals pending.<br/>Agents will surface decisions here.
+      </div>
+    );
+  }
+  return (
+    <div>
+      {approvals.map(a => (
+        <div className="approval" key={a.id}>
+          <div className="approval-head">
+            <span className={'approval-type ' + a.tone}>{a.type}</span>
+            <span className="approval-conf">conf <b>{a.conf}</b></span>
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--muted)' }}>{a.approver}</span>
+          </div>
+          <div>
+            <h4 className="approval-title">{a.title}</h4>
+            <div className="approval-meta">{a.meta}</div>
+          </div>
+          <div className="approval-actions">
+            <button className="primary" onClick={() => onResolve(a.id, 'approve')}>Approve</button>
+            <button onClick={() => onResolve(a.id, 'edit')}>Edit</button>
+            <button onClick={() => onResolve(a.id, 'pass')}>Decline</button>
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--muted-2)', alignSelf: 'center' }}>owner · {a.owner}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BriefPreview({ stats }) {
+  return (
+    <div className="brief">
+      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Week of Mar 17, 2026</div>
+      <div style={{ fontSize: 11, color: 'var(--muted)' }}>Generated from live system data · PDF + email</div>
+      <div className="brief-grid">
+        <div className="brief-cell green">
+          <div className="k">Changed</div>
+          <div className="v">{stats.signals}</div>
+          <div className="x">new signals</div>
+        </div>
+        <div className="brief-cell gold">
+          <div className="k">Stuck</div>
+          <div className="v">{stats.stuck}</div>
+          <div className="x">awaiting reply</div>
+        </div>
+        <div className="brief-cell risk">
+          <div className="k">Decide</div>
+          <div className="v">{stats.approvals}</div>
+          <div className="x">need judgment</div>
+        </div>
+      </div>
+      <div className="brief-headlines">
+        <div className="row">
+          <span className="sq"></span>
+          <div><b>Carter · Cedar Park HGI</b> moved to pursue · score 0.84</div>
+        </div>
+        <div className="row">
+          <span className="sq gold"></span>
+          <div><b>Westwell Dallas RFQ</b> awaiting ESA · decision due in 6d</div>
+        </div>
+        <div className="row">
+          <span className="sq"></span>
+          <div><b>Hyatt Place · Q4 list</b> 3 new sites surfaced from franchise filing</div>
+        </div>
+        <div className="row">
+          <span className="sq risk"></span>
+          <div><b>Plan review · West Loop</b> variance hearing scheduled Apr 4</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VideoSlot({ videoSrc }) {
+  return (
+    <div className="video-slot">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+        <span className="label" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--muted-2)' }}>Walkthrough video</span>
+        <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 'auto' }}>2:14</span>
+      </div>
+      <div className="video-frame">
+        {videoSrc ? (
+          <video src={videoSrc} controls poster=""></video>
+        ) : (
+          <>
+            <span className="video-label">Higgsfield · placeholder</span>
+            <div className="video-play"></div>
+            <div className="video-sub">A 30-second cinematic walkthrough of the agents in motion will live here.</div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RightColumn({ approvals, briefStats, videoSrc, onResolve }) {
+  const [tab, setTab] = useState('approvals');
+  return (
+    <div className="col-right">
+      <div className="tabs">
+        <button className={'tab' + (tab === 'approvals' ? ' on' : '')} onClick={() => setTab('approvals')}>
+          Approvals {approvals.length > 0 && <span className="badge">{approvals.length}</span>}
+        </button>
+        <button className={'tab' + (tab === 'brief' ? ' on' : '')} onClick={() => setTab('brief')}>Executive brief</button>
+        <button className={'tab' + (tab === 'video' ? ' on' : '')} onClick={() => setTab('video')}>Walkthrough</button>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }} className="v-fade-in" key={tab}>
+        {tab === 'approvals' && <ApprovalsList approvals={approvals} onResolve={onResolve} />}
+        {tab === 'brief' && <BriefPreview stats={briefStats} />}
+        {tab === 'video' && <VideoSlot videoSrc={videoSrc} />}
+      </div>
+    </div>
+  );
+}
+
+// ===== main app =====
+function App() {
+  const [paused, setPaused] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const vt = useTicker(paused, speed);
+
+  // agent states
+  const [agentStates, setAgentStates] = useState(() => {
+    const o = {};
+    Object.values(AGENTS).forEach(a => { o[a.id] = { status: 'idle', task: a.idleTask }; });
+    return o;
+  });
+  const [log, setLog] = useState([]);
+  const [packets, setPackets] = useState([]);
+  const [approvals, setApprovals] = useState([]);
+  const [briefStats, setBriefStats] = useState({ signals: 0, rfqs: 0, approvals: 0, stuck: 0 });
+
+  const runningRef = useRef([]); // {scenarioId, startedVt, nextIdx}
+  const [runningIds, setRunningIds] = useState([]);
+  const eventIdRef = useRef(0);
+  const nextEventId = () => ++eventIdRef.current;
+
+  // apply a step to the state
+  const applyStep = useCallback((step, atVt) => {
+    switch (step.kind) {
+      case 'set':
+        setAgentStates(s => ({
+          ...s,
+          [step.agent]: {
+            status: step.status,
+            task: step.task !== undefined ? step.task : s[step.agent].task,
+          },
+        }));
+        break;
+      case 'send': {
+        const fromA = AGENTS[step.from], toA = AGENTS[step.to];
+        if (!fromA || !toA) break;
+        const duration = 1100; // virtual ms
+        const id = 'pk-' + nextEventId();
+        setPackets(p => [...p, { id, fromId: step.from, toId: step.to, label: step.label, tone: step.tone || 'default', startVt: atVt, duration }]);
+        // auto-remove after duration
+        setTimeout(() => {
+          setPackets(p => p.filter(x => x.id !== id));
+        }, (duration / speed) + 100);
+        break;
+      }
+      case 'log':
+        setLog(l => [...l, { id: 'lg-' + nextEventId(), atVt, from: step.from, msg: step.msg, level: step.level }]);
+        break;
+      case 'approval':
+        setApprovals(a => {
+          if (a.some(x => x.id === step.approval.id)) return a;
+          return [...a, step.approval];
+        });
+        break;
+      case 'brief':
+        setBriefStats(b => ({ ...b, ...step }));
+        break;
+    }
+  }, [speed]);
+
+  // process timeline each tick
+  const lastVtRef = useRef(0);
+  useEffect(() => {
+    if (runningRef.current.length === 0) { lastVtRef.current = vt; return; }
+    let changed = false;
+    runningRef.current = runningRef.current.filter(r => {
+      const sc = SCENARIOS.find(x => x.id === r.scenarioId);
+      while (r.nextIdx < sc.steps.length && sc.steps[r.nextIdx].at + r.startedVt <= vt) {
+        applyStep(sc.steps[r.nextIdx], sc.steps[r.nextIdx].at + r.startedVt);
+        r.nextIdx++;
+      }
+      const stillRunning = r.nextIdx < sc.steps.length;
+      if (!stillRunning) changed = true;
+      return stillRunning;
+    });
+    if (changed) setRunningIds(runningRef.current.map(r => r.scenarioId));
+    lastVtRef.current = vt;
+  }, [vt, applyStep]);
+
+  const triggerScenario = (sc) => {
+    // if it's the same and already running, allow re-trigger (queue)
+    runningRef.current.push({ scenarioId: sc.id, startedVt: vt, nextIdx: 0 });
+    setRunningIds(runningRef.current.map(r => r.scenarioId));
+  };
+
+  const resolveApproval = (id) => {
+    setApprovals(a => a.filter(x => x.id !== id));
+    setLog(l => [...l, { id: 'lg-' + nextEventId(), atVt: vt, from: 'human', msg: '<b>Approved</b> · ' + id, level: 'decide' }]);
+    setAgentStates(s => {
+      const remaining = approvals.length - 1;
+      return {
+        ...s,
+        human: {
+          status: remaining > 0 ? 'awaiting' : 'idle',
+          task: remaining > 0 ? `${remaining} approval${remaining !== 1 ? 's' : ''} waiting` : 'Mailbox at zero',
+        },
+      };
+    });
+  };
+
+  const reset = () => {
+    runningRef.current = [];
+    setRunningIds([]);
+    setLog([]);
+    setPackets([]);
+    setApprovals([]);
+    setBriefStats({ signals: 0, rfqs: 0, approvals: 0, stuck: 0 });
+    const o = {};
+    Object.values(AGENTS).forEach(a => { o[a.id] = { status: 'idle', task: a.idleTask }; });
+    setAgentStates(o);
+  };
+
+  // tweaks
+  const [tweaks, setTweak] = TweaksPanelLib.useTweaks(/*EDITMODE-BEGIN*/{
+    "showTweaks": true,
+    "videoSrc": "",
+    "autoplay": "off"
+  }/*EDITMODE-END*/);
+
+  // autoplay: cycle scenarios on launch (for demo)
+  useEffect(() => {
+    if (tweaks.autoplay === 'on') {
+      const timers = [];
+      timers.push(setTimeout(() => triggerScenario(SCEN_PERMIT), 600));
+      timers.push(setTimeout(() => triggerScenario(SCEN_RFQ), 4000));
+      timers.push(setTimeout(() => triggerScenario(SCEN_BROKER), 11000));
+      timers.push(setTimeout(() => triggerScenario(SCEN_BRIEF), 16000));
+      return () => timers.forEach(clearTimeout);
+    }
+  }, [tweaks.autoplay]);
+
+  return (
+    <>
+      <TopBar
+        vt={vt}
+        paused={paused}
+        speed={speed}
+        onToggle={() => setPaused(p => !p)}
+        onSpeed={setSpeed}
+        onReset={reset}
+        runningCount={runningIds.length}
+      />
+      <ScenarioRow onTrigger={triggerScenario} runningIds={runningIds} />
+      <div className="main">
+        <div className="col-left">
+          <Network agentStates={agentStates} activePackets={packets} vt={vt} />
+          <LogPanel log={log} baseMs={(14 * 3600 + 32 * 60 + 8) * 1000} />
+        </div>
+        <RightColumn
+          approvals={approvals}
+          briefStats={briefStats}
+          videoSrc={tweaks.videoSrc}
+          onResolve={resolveApproval}
+        />
+      </div>
+
+      <TweaksPanelLib.TweaksPanel title="Tweaks">
+        <TweaksPanelLib.TweakSection title="Demo">
+          <TweaksPanelLib.TweakRadio
+            label="Autoplay scenarios"
+            value={tweaks.autoplay}
+            onChange={(v) => setTweak('autoplay', v)}
+            options={['off', 'on']}
+          />
+          <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.4, marginTop: 4 }}>
+            On → automatically stacks all four scenarios on load to show the system in motion.
+          </div>
+        </TweaksPanelLib.TweakSection>
+        <TweaksPanelLib.TweakSection title="Video">
+          <TweaksPanelLib.TweakText
+            label="Walkthrough video URL"
+            value={tweaks.videoSrc}
+            onChange={(v) => setTweak('videoSrc', v)}
+            placeholder="Paste Higgsfield .mp4 URL"
+          />
+          <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.4, marginTop: 4 }}>
+            Drop your Higgsfield mp4 link into the URL field. Or upload to the project and paste the filename.
+          </div>
+        </TweaksPanelLib.TweakSection>
+      </TweaksPanelLib.TweaksPanel>
+    </>
+  );
+}
+
+// the tweaks-panel.jsx file exposes things on window via Object.assign — gather them under a namespace
+const TweaksPanelLib = {
+  useTweaks: window.useTweaks,
+  TweaksPanel: window.TweaksPanel,
+  TweakSection: window.TweakSection,
+  TweakRadio: window.TweakRadio,
+  TweakText: window.TweakText,
+  TweakSlider: window.TweakSlider,
+  TweakToggle: window.TweakToggle,
+};
+
+const root = ReactDOM.createRoot(document.getElementById('canvas'));
+root.render(<App />);
+
+</script>
+</body>
+</html>

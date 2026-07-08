@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Level Intelligence OS — Two Paths</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px;
+        overflow: hidden;
+        background: #f6f7f4;
+        font-family: Inter, system-ui, sans-serif;
+        color: #11161d;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      :root {
+        --ink:    #11161d;
+        --ink2:   #2a323c;
+        --muted:  #626d78;
+        --muted2: #8a96a2;
+        --line:   #d8dde3;
+        --line2:  #ebeef2;
+        --paper:  #f6f7f4;
+        --paper2: #efefe9;
+        --surface:#ffffff;
+        --green:  #0d806c;
+        --green2: #e2f2ee;
+        --gold:   #bd8427;
+        --gold2:  #f5e9d2;
+        --dark:   #17202b;
+        --risk:   #b84a4a;
+        --risk2:  #f6dede;
+        --pathB:  #6dd0b9;
+      }
+
+      /* Background gradient under lanes */
+      .bg-deco {
+        position: absolute; left: 0; top: 96px;
+        width: 100%; height: 684px;
+        background: linear-gradient(to bottom, #f6f7f4 0%, #efefe9 100%);
+      }
+
+      /* Header */
+      .header-bar {
+        position: absolute; left: 0; top: 0;
+        width: 100%; height: 96px;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        display: flex; align-items: center;
+        padding: 0 60px;
+      }
+      .brand-mark {
+        display: inline-grid; place-items: center;
+        width: 46px; height: 46px; border: 2px solid var(--ink);
+        font-size: 18px; font-weight: 900; letter-spacing: 0.02em;
+        margin-right: 22px;
+      }
+      .brand-label {
+        font-size: 14px; font-weight: 800; letter-spacing: 0.20em;
+        text-transform: uppercase; color: var(--muted);
+        white-space: nowrap;
+      }
+      .center-headline {
+        font-size: 30px; font-weight: 800;
+        letter-spacing: -0.018em; color: var(--ink); text-align: center;
+      }
+      .center-headline .dim { color: var(--muted); }
+      .live-tag {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 4px 12px; font-size: 13px; font-weight: 700;
+        letter-spacing: 0.10em; text-transform: uppercase;
+        color: #fff; background: var(--ink); border: 1px solid var(--ink);
+        border-radius: 999px; white-space: nowrap;
+      }
+      .live-dot {
+        display: inline-block; width: 8px; height: 8px; border-radius: 4px;
+        background: #6dd0b9;
+      }
+      .flex-spacer { flex: 1; }
+
+      /* Divider between lanes */
+      .divider {
+        position: absolute;
+        left: 949.5px; top: 124px; bottom: 308px;
+        width: 1px; background: var(--line);
+      }
+
+      /* Lane container */
+      .lane {
+        position: absolute; top: 124px; width: 880px; height: 636px;
+      }
+      .lane.lane-trad { left: 60px; }
+      .lane.lane-os   { left: 960px; }
+
+      /* Lane header */
+      .lane-header { position: absolute; left: 0; top: 0; width: 100%; height: 116px; }
+      .lane-header .row1 { display: flex; align-items: flex-end; gap: 18px; }
+      .lane-header .sq {
+        width: 20px; height: 20px; flex: 0 0 20px;
+        margin-bottom: 12px;
+      }
+      .lane-header .title {
+        font-size: 14px; font-weight: 800; letter-spacing: 0.20em;
+        text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+      }
+      .lane-header .sub-label {
+        font-size: 14px; font-weight: 600; letter-spacing: 0.04em;
+        margin-bottom: 14px;
+      }
+      .lane-header .row2 {
+        display: flex; align-items: baseline; gap: 22px; margin-top: 8px;
+      }
+      .lane-header .clock-big {
+        font-size: 84px; font-weight: 800;
+        letter-spacing: -0.03em; line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .lane-header .clock-sub {
+        font-size: 22px; font-weight: 600; color: var(--muted2);
+        line-height: 1.2; max-width: 360px;
+      }
+
+      .trad-clock { color: var(--ink); }
+      .os-clock   { color: var(--green); }
+      .trad-accent { color: var(--risk); }
+      .os-accent   { color: var(--green); }
+
+      /* DELIVERED chip */
+      .delivered-chip {
+        position: absolute; top: 36px; right: 0;
+        opacity: 0; transform: translateY(8px);
+      }
+      .delivered-chip .inner {
+        background: var(--green); color: #fff;
+        padding: 10px 18px;
+        font-size: 14px; font-weight: 800;
+        letter-spacing: 0.18em; text-transform: uppercase;
+        display: flex; align-items: center; gap: 10px;
+        white-space: nowrap;
+      }
+      .delivered-chip .dot {
+        display: inline-block; width: 9px; height: 9px;
+        border-radius: 5px; background: #fff;
+      }
+
+      /* Steps */
+      .steps {
+        position: absolute; left: 0; top: 156px; width: 100%; height: 460px;
+      }
+      .step-slot {
+        position: absolute; left: 0; width: 880px; height: 70px;
+      }
+      .step-card {
+        position: absolute; inset: 0;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        display: flex; align-items: center;
+        padding: 0 22px 0 16px;
+        gap: 18px;
+      }
+      .step-card .tick {
+        position: absolute; left: 16px; top: -10px;
+        width: 1px; height: 10px; background: var(--line);
+        opacity: 0.7;
+      }
+      .step-card .accent-bar {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: 0;
+      }
+      .step-card .idx {
+        width: 30px; text-align: right;
+        font-size: 13px; font-weight: 800; letter-spacing: 0.14em;
+        color: var(--muted2);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        margin-left: 4px;
+        flex: 0 0 30px;
+      }
+      .step-card .icon-wrap {
+        flex: 0 0 22px; width: 22px; height: 22px;
+        position: relative;
+      }
+      .step-card .icon-wrap svg { position: absolute; left: 0; top: 0; }
+      .step-card .meta {
+        width: 220px; flex: 0 0 220px;
+      }
+      .step-card .meta .label {
+        font-size: 13px; font-weight: 800; letter-spacing: 0.14em;
+        text-transform: uppercase; color: var(--muted); line-height: 1;
+      }
+      .step-card .meta .agent {
+        font-size: 19px; font-weight: 700; color: var(--ink);
+        margin-top: 6px; letter-spacing: -0.005em; line-height: 1.1;
+      }
+      .step-card .msg {
+        flex: 1;
+        font-size: 16px; font-weight: 500;
+        color: var(--muted2); line-height: 1.32;
+        padding-right: 8px;
+      }
+      .step-card .clock-chip {
+        flex: 0 0 auto;
+        background: var(--paper2);
+        color: var(--muted);
+        padding: 6px 12px;
+        font-size: 13px; font-weight: 800;
+        letter-spacing: 0.10em; text-transform: uppercase;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        min-width: 78px; text-align: center;
+      }
+      .step-active {
+        position: absolute; inset: 0;
+        opacity: 0; transform: translateY(12px);
+      }
+
+      .waiting-dot {
+        position: absolute;
+        display: flex; align-items: center; gap: 8px;
+        font-size: 12px; font-weight: 700; color: var(--muted2);
+        letter-spacing: 0.16em; text-transform: uppercase;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .waiting-dot .pulse {
+        display: inline-block; width: 8px; height: 8px; border-radius: 4px;
+        background: var(--muted2); opacity: 0.7;
+      }
+
+      /* ── Compare ROI strip (dual-sided) ───────────────────────────── */
+      .compare-strip {
+        position: absolute; left: 0; top: 780px;
+        width: 100%; height: 276px;
+        background: var(--dark);
+        color: #fff;
+        opacity: 0; transform: translateY(30px);
+      }
+      .compare-inner {
+        height: 100%;
+        padding: 22px 56px 20px;
+        display: flex; gap: 20px;
+        box-sizing: border-box;
+      }
+      .compare-card {
+        flex: 1; min-width: 0;
+        display: flex; flex-direction: column;
+        gap: 8px;
+        opacity: 0; transform: translateY(12px);
+      }
+      .compare-card.not-last {
+        padding-right: 20px;
+        border-right: 1px solid rgba(255,255,255,0.10);
+      }
+      .compare-card .card-label {
+        font-size: 13px; font-weight: 800; letter-spacing: 0.18em;
+        text-transform: uppercase; color: rgba(255,255,255,0.6);
+        line-height: 1.2;
+      }
+      .compare-card .card-sub {
+        font-size: 12px; font-weight: 500;
+        color: rgba(255,255,255,0.55); line-height: 1.35;
+        margin-top: 2px;
+        text-wrap: pretty;
+      }
+      .path-row {
+        display: flex; align-items: flex-start; gap: 12px;
+      }
+      .path-badge {
+        flex: 0 0 auto;
+        display: inline-flex; align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        font-size: 10px; font-weight: 800; letter-spacing: 0.20em;
+        text-transform: uppercase;
+        height: 22px;
+        margin-top: 14px;
+      }
+      .path-badge .badge-dot {
+        width: 7px; height: 7px;
+        display: inline-block;
+      }
+      .path-a {
+        background: rgba(184,74,74,0.13);  /* C.risk + alpha 0x22 ≈ 13% */
+        color: var(--risk);
+      }
+      .path-a .badge-dot { background: var(--risk); }
+      .path-b {
+        background: rgba(109,208,185,0.13);
+        color: var(--pathB);
+      }
+      .path-b .badge-dot { background: var(--pathB); }
+
+      .path-value-wrap { flex: 1; min-width: 0; }
+      .path-value {
+        font-size: 44px; font-weight: 800;
+        letter-spacing: -0.03em; line-height: 1.15;
+        color: #fff;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis;
+      }
+      .path-value .pulse-row {
+        display: inline-flex; align-items: center; gap: 14px;
+      }
+      .path-value .pulse-dot {
+        display: inline-block;
+        width: 14px; height: 14px; border-radius: 7px;
+        background: var(--pathB);
+        box-shadow: 0 0 22px var(--pathB);
+        opacity: 1;
+      }
+      .path-note {
+        font-size: 12px; font-weight: 500;
+        color: rgba(255,255,255,0.58);
+        margin-top: 4px; line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis;
+      }
+
+      /* Outro overlay */
+      .outro {
+        position: absolute; inset: 0;
+        background: rgba(23,32,43,0.78);
+        backdrop-filter: blur(3px);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .outro-inner {
+        position: absolute;
+        left: 50%; top: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center; color: #fff;
+        width: 1280px;
+      }
+      .outro .kicker {
+        font-size: 14px; font-weight: 800;
+        letter-spacing: 0.24em; text-transform: uppercase;
+        color: #6dd0b9; margin-bottom: 22px;
+      }
+      .outro .headline {
+        font-size: 96px; font-weight: 800;
+        letter-spacing: -0.03em; line-height: 0.96;
+      }
+      .outro .stats {
+        margin-top: 38px;
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 28px; padding: 0 80px;
+      }
+      .outro-stat {
+        border-top: 1px solid rgba(255,255,255,0.18);
+        padding-top: 22px; text-align: left;
+      }
+      .outro-stat .label {
+        font-size: 13px; font-weight: 800; letter-spacing: 0.18em;
+        text-transform: uppercase; color: rgba(255,255,255,0.55);
+      }
+      .outro-stat .value {
+        font-size: 64px; font-weight: 800;
+        letter-spacing: -0.03em; line-height: 1; margin-top: 12px;
+      }
+      .outro-stat .sub {
+        font-size: 16px; font-weight: 500;
+        color: rgba(255,255,255,0.7); margin-top: 12px; line-height: 1.32;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="58"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div class="bg-deco"></div>
+
+      <!-- Header -->
+      <div class="header-bar" id="header-bar">
+        <div class="brand-mark">LX</div>
+        <div class="brand-label">
+          Level Intelligence OS · client review
+        </div>
+        <div class="flex-spacer"></div>
+        <div class="center-headline">
+          Same opportunity. <span class="dim">Two paths.</span>
+        </div>
+        <div class="flex-spacer"></div>
+        <div class="live-tag">
+          <span class="live-dot"></span>
+          Live preview
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Traditional Lane -->
+      <div class="lane lane-trad">
+        <div class="lane-header">
+          <div class="row1">
+            <div class="sq" style="background:#b84a4a;"></div>
+            <div class="title">Path A · Traditional ops</div>
+            <div class="sub-label trad-accent">manual handoffs</div>
+          </div>
+          <div class="row2">
+            <div class="clock-big trad-clock" id="trad-day">Day 1</div>
+            <div class="clock-sub" id="trad-sub">Carried in inboxes · spreadsheets · memory</div>
+          </div>
+        </div>
+        <div class="steps" id="trad-steps"></div>
+      </div>
+
+      <!-- Level OS Lane -->
+      <div class="lane lane-os">
+        <div class="lane-header">
+          <div class="row1">
+            <div class="sq" style="background:#0d806c;"></div>
+            <div class="title">Path B · Level Intelligence OS</div>
+            <div class="sub-label os-accent">agentic</div>
+          </div>
+          <div class="row2">
+            <div class="clock-big os-clock" id="os-clock">09:14</div>
+            <div class="clock-sub" id="os-sub">Agents orchestrate · one context layer</div>
+          </div>
+        </div>
+        <div class="delivered-chip" id="delivered-chip">
+          <div class="inner">
+            <span class="dot"></span>
+            Delivered · 6 min total
+          </div>
+        </div>
+        <div class="steps" id="os-steps"></div>
+      </div>
+
+      <!-- Dual-sided ROI strip -->
+      <div class="compare-strip" id="compare-strip">
+        <div class="compare-inner" id="compare-inner"></div>
+      </div>
+
+      <!-- Outro overlay -->
+      <div class="outro" id="outro">
+        <div class="outro-inner">
+          <div class="kicker">The bottom line</div>
+          <div class="headline">31 days collapses<br />into a single morning.</div>
+          <div class="stats">
+            <div class="outro-stat">
+              <div class="label">Less human labor wasted</div>
+              <div class="value">~96%</div>
+              <div class="sub">Hours, not days, per pursuit</div>
+            </div>
+            <div class="outro-stat">
+              <div class="label">Signals never dropped</div>
+              <div class="value">0</div>
+              <div class="sub">Everything routed to context</div>
+            </div>
+            <div class="outro-stat">
+              <div class="label">Executive line of sight</div>
+              <div class="value">Live</div>
+              <div class="sub">Proactive, on-demand, deep</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ── Story data ───────────────────────────────────────────────────────────
+      const DURATION = 58;
+      const BEATS = {
+        introStart: 0.0, introEnd: 3.2,
+        laneStart: 3.4,
+        osLaneEnd: 13.8,
+        tradLaneEnd: 47.0,
+        summaryStart: 48.5, summaryEnd: 58.0,
+      };
+      const STAGES = {
+        detect:  { label: 'Detect' },
+        verify:  { label: 'Verify' },
+        context: { label: 'Context' },
+        score:   { label: 'Score' },
+        brief:   { label: 'Brief' },
+        decide:  { label: 'Decide' },
+      };
+      const OS_STEPS = [
+        { stage: 'detect',  agent: 'Scout',         clock: '09:14',
+          msg: 'Travis County · HGI Cedar Park · 120-key · applicant Carter', t: 4.2 },
+        { stage: 'verify',  agent: 'Permit',        clock: '09:14',
+          msg: 'Plan review queue · 22d · scope = new-build · hospitality',    t: 5.4 },
+        { stage: 'context', agent: 'Memory',        clock: '09:15',
+          msg: 'Carter · strength 0.78 · 3 prior bids · 2 wins · last touch 14d', t: 6.8 },
+        { stage: 'score',   agent: 'Qualifier',     clock: '09:16',
+          msg: 'Score 0.84 · pursue · comparable: Plano HGI (won, 0.81)',     t: 8.4 },
+        { stage: 'brief',   agent: 'Bid',           clock: '09:18',
+          msg: 'Pursuit brief drafted · 2 open questions for Carter',          t: 10.4 },
+        { stage: 'decide',  agent: 'Brief → Levin', clock: '09:20',
+          msg: 'Approval queued · M. Levin · move to pursue',                  t: 12.8 },
+      ];
+      const TRAD_STEPS = [
+        { stage: 'detect',  who: 'BD inbox',          day: 'Day 1',  dayN: 1,
+          msg: 'Permit email landed · sat in inbox for 3 days', t: 5.5, status: 'slow' },
+        { stage: 'verify',  who: 'BD lead',           day: 'Day 5',  dayN: 5,
+          msg: 'Forwarded to Sara — "can you look at this?"',     t: 11.0, status: 'slow' },
+        { stage: 'context', who: 'Sara · CRM',        day: 'Day 9',  dayN: 9,
+          msg: 'CRM stale · pinging team about Carter history',  t: 17.5, status: 'wait' },
+        { stage: 'score',   who: 'Sara + Mark',       day: 'Day 16', dayN: 16,
+          msg: 'Memo drafted · two team members give conflicting numbers', t: 25.5, status: 'wait' },
+        { stage: 'brief',   who: 'M. Levin · OOO',    day: 'Day 23', dayN: 23,
+          msg: 'Levin out of office · Slack thread loops · no decision',   t: 34.5, status: 'flag' },
+        { stage: 'decide',  who: '—',                  day: 'Day 31', dayN: 31,
+          msg: 'RFQ deadline passed · pursuit dropped · signal lost',      t: 44.5, status: 'lost' },
+      ];
+
+      const HOURLY_RATE = 150;
+      const fmtMoney = (h) => {
+        const v = h * HOURLY_RATE;
+        return v >= 1000 ? `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `$${Math.round(v)}`;
+      };
+
+      const COMPARE_METRICS = [
+        {
+          key: 'hours',
+          label: 'Hours of human work',
+          suffix: ' hrs',
+          a: {
+            frames: [
+              [BEATS.laneStart, 0],
+              [5.5, 1.5], [11, 3.0], [17.5, 5.5],
+              [25.5, 8.5], [34.5, 11.5], [44.5, 14.0],
+            ],
+            decimals: 1,
+            noteFn: (v) => `${fmtMoney(v)} of BD time burned`,
+          },
+          b: {
+            frames: [
+              [BEATS.laneStart, 0],
+              [4.2, 0.05], [5.4, 0.10], [6.8, 0.15],
+              [8.4, 0.25], [10.4, 0.40], [12.8, 0.50],
+            ],
+            decimals: 2,
+            noteFn: (v) => `${fmtMoney(v)} of judgement-only time`,
+          },
+          sub: 'Path B reserves humans for judgement — not coordination.',
+        },
+        {
+          key: 'days',
+          label: 'Days to decision',
+          a: {
+            frames: [
+              [BEATS.laneStart, 0],
+              [5.5, 1], [11, 5], [17.5, 9],
+              [25.5, 16], [34.5, 23], [44.5, 31],
+            ],
+            decimals: 0,
+            noteFn: (v) => v >= 31 ? 'past the RFQ deadline' : 'still in flight',
+          },
+          b: {
+            frames: [
+              [BEATS.laneStart, 0], [4.2, 1], [12.8, 1],
+            ],
+            decimals: 0,
+            noteFn: () => 'closed inside one morning',
+          },
+          sub: 'One morning vs. a missed deadline.',
+        },
+        {
+          key: 'signals',
+          label: 'Signals captured this week',
+          a: {
+            frames: [
+              [BEATS.laneStart, 0],
+              [5.5, 1], [11, 1], [17.5, 1],
+              [25.5, 1], [34.5, 1], [44.5, 1],
+            ],
+            decimals: 0,
+            noteFn: () => '3 dropped on the floor',
+          },
+          b: {
+            frames: [
+              [BEATS.laneStart, 0],
+              [4.2, 1], [6.8, 3], [8.4, 6],
+              [10.4, 9], [12.8, 12], [30, 12],
+            ],
+            decimals: 0,
+            noteFn: () => '0 dropped · everything routed',
+          },
+          sub: 'Every inbound goes to the same operating context.',
+        },
+        {
+          key: 'visibility',
+          label: 'Executive visibility',
+          isText: true,
+          a: {
+            frames: [
+              [BEATS.laneStart, 'On · fresh'],
+              [11, 'Stale'],
+              [17.5, 'Slack-only'],
+              [25.5, 'Stale'],
+              [34.5, 'OOO'],
+              [44.5, 'Lost'],
+            ],
+            noteFn: (v) =>
+              v === 'Lost' ? 'no clean line of sight' :
+              v === 'OOO' ? 'last sync 6+ days ago' :
+              v === 'Stale' ? 'snapshot, not live' :
+              v === 'Slack-only' ? 'threads, not pipeline' :
+              'fresh briefing on hand',
+          },
+          b: {
+            frames: [
+              [BEATS.laneStart, 'Live'], [12.8, 'Live'],
+            ],
+            pulse: true,
+            noteFn: () => 'proactive · on-demand · deep',
+          },
+          sub: 'M. Levin can tap in at any moment — and gets pushed before he asks.',
+        },
+      ];
+
+      // ── Tone palette for step cards ─────────────────────────────────────────
+      const TONES = {
+        os:   { fill: '#e2f2ee', accent: '#0d806c', iconColor: '#0d806c', icon: 'done',  chipBg: '#17202b', msgColor: '#2a323c' },
+        slow: { fill: '#ffffff', accent: '#bd8427', iconColor: '#bd8427', icon: 'wait',  chipBg: '#11161d', msgColor: '#2a323c' },
+        wait: { fill: '#ffffff', accent: '#bd8427', iconColor: '#bd8427', icon: 'wait',  chipBg: '#11161d', msgColor: '#2a323c' },
+        flag: { fill: '#ffffff', accent: '#b84a4a', iconColor: '#b84a4a', icon: 'flag',  chipBg: '#11161d', msgColor: '#2a323c' },
+        lost: { fill: '#f6dede', accent: '#b84a4a', iconColor: '#b84a4a', icon: 'lost',  chipBg: '#11161d', msgColor: '#2a323c' },
+      };
+
+      function iconSvg(kind, color) {
+        const common = 'width="22" height="22" viewBox="0 0 24 24" fill="none"';
+        if (kind === 'done') {
+          return `<svg ${common}><rect x="1.5" y="1.5" width="21" height="21" fill="${color}"/><path d="M6 12.5L10.5 17L18 8" stroke="#fff" stroke-width="2.2" stroke-linecap="square"/></svg>`;
+        }
+        if (kind === 'wait') {
+          return `<svg ${common}><rect x="1.5" y="1.5" width="21" height="21" fill="${color}"/><circle cx="12" cy="12" r="6" stroke="#fff" stroke-width="2.2"/><path d="M12 8v4l3 2" stroke="#fff" stroke-width="2.2" stroke-linecap="square"/></svg>`;
+        }
+        if (kind === 'flag') {
+          return `<svg ${common}><rect x="1.5" y="1.5" width="21" height="21" fill="${color}"/><path d="M12 6v8M12 17v1.5" stroke="#fff" stroke-width="2.2" stroke-linecap="square"/></svg>`;
+        }
+        if (kind === 'lost') {
+          return `<svg ${common}><rect x="1.5" y="1.5" width="21" height="21" fill="${color}"/><path d="M7 7L17 17M17 7L7 17" stroke="#fff" stroke-width="2.2" stroke-linecap="square"/></svg>`;
+        }
+        return `<svg ${common}><rect x="2" y="2" width="20" height="20" stroke="#d8dde3" stroke-width="1.5" fill="#ffffff"/></svg>`;
+      }
+
+      function renderStepSlot(opts) {
+        const { idx, y, label, who, msg, clock, tone, slotId } = opts;
+        const tonePal = TONES[tone];
+        const tick = idx > 0 ? '<div class="tick"></div>' : '';
+        const placeholder = `
+          <div class="step-card step-placeholder" id="${slotId}-pl" style="opacity:0.5;">
+            ${tick}
+            <div class="idx">${String(idx + 1).padStart(2, '0')}</div>
+            <div class="icon-wrap">${iconSvg('pending')}</div>
+            <div class="meta">
+              <div class="label">${label}</div>
+              <div class="agent">${who}</div>
+            </div>
+            <div class="msg">${msg}</div>
+            <div class="clock-chip">${clock}</div>
+          </div>`;
+        const active = `
+          <div class="step-card step-active" id="${slotId}-act"
+               style="background:${tonePal.fill};border-color:${tonePal.accent};">
+            ${tick.replace('class="tick"', `class="tick" style="background:${tonePal.accent};"`)}
+            <div class="accent-bar" style="background:${tonePal.accent};"></div>
+            <div class="idx">${String(idx + 1).padStart(2, '0')}</div>
+            <div class="icon-wrap">${iconSvg(tonePal.icon, tonePal.iconColor)}</div>
+            <div class="meta">
+              <div class="label">${label}</div>
+              <div class="agent">${who}</div>
+            </div>
+            <div class="msg" style="color:${tonePal.msgColor};">${msg}</div>
+            <div class="clock-chip" style="background:${tonePal.chipBg};color:#fff;">${clock}</div>
+          </div>`;
+        return `<div class="step-slot" id="${slotId}" style="top:${y}px;">${placeholder}${active}</div>`;
+      }
+
+      // Populate step rows
+      document.getElementById('trad-steps').innerHTML = TRAD_STEPS.map((s, i) =>
+        renderStepSlot({
+          idx: i, y: i * (70 + 14),
+          label: STAGES[s.stage].label, who: s.who,
+          msg: s.msg, clock: s.day,
+          tone: s.status, slotId: `trad-${i}`,
+        })
+      ).join('') + `
+        <div class="waiting-dot" id="trad-waiting">
+          <span class="pulse"></span>
+          <span class="waiting-label">waiting · idle</span>
+        </div>`;
+
+      document.getElementById('os-steps').innerHTML = OS_STEPS.map((s, i) =>
+        renderStepSlot({
+          idx: i, y: i * (70 + 14),
+          label: STAGES[s.stage].label, who: s.agent,
+          msg: s.msg, clock: s.clock,
+          tone: 'os', slotId: `os-${i}`,
+        })
+      ).join('');
+
+      // ── Compare ROI cards ───────────────────────────────────────────────────
+      function formatValue(v, side, isText, suffix) {
+        if (isText) return v;
+        return `${Number(v).toFixed(side.decimals || 0)}${suffix || ''}`;
+      }
+      function renderPathRow(metric, side, sideKey, badgeText, initialValue, initialNote) {
+        const isPulse = side.pulse;
+        let valueInner;
+        if (isPulse) {
+          valueInner = `<span class="pulse-row"><span class="pulse-dot" id="m-${metric.key}-${sideKey}-pulse"></span><span class="pulse-text" id="m-${metric.key}-${sideKey}-val">${initialValue}</span></span>`;
+        } else {
+          valueInner = `<span id="m-${metric.key}-${sideKey}-val">${initialValue}</span>`;
+        }
+        return `
+          <div class="path-row">
+            <div class="path-badge path-${sideKey}">
+              <span class="badge-dot"></span>${badgeText}
+            </div>
+            <div class="path-value-wrap">
+              <div class="path-value">${valueInner}</div>
+              <div class="path-note" id="m-${metric.key}-${sideKey}-note">${initialNote}</div>
+            </div>
+          </div>`;
+      }
+
+      const compareInner = document.getElementById('compare-inner');
+      compareInner.innerHTML = COMPARE_METRICS.map((m, i) => {
+        const lastClass = (i === COMPARE_METRICS.length - 1) ? '' : ' not-last';
+        const aInitVal  = m.isText ? m.a.frames[0][1] : formatValue(m.a.frames[0][1], m.a, false, m.suffix);
+        const bInitVal  = m.isText ? m.b.frames[0][1] : formatValue(m.b.frames[0][1], m.b, false, m.suffix);
+        const aInitNote = m.a.noteFn ? m.a.noteFn(m.a.frames[0][1]) : '';
+        const bInitNote = m.b.noteFn ? m.b.noteFn(m.b.frames[0][1]) : '';
+        return `
+          <div class="compare-card${lastClass}" id="card-${i}">
+            <div class="card-label">${m.label}</div>
+            ${renderPathRow(m, m.a, 'a', 'Path A', aInitVal, aInitNote)}
+            ${renderPathRow(m, m.b, 'b', 'Path B', bInitVal, bInitNote)}
+            <div class="card-sub">${m.sub}</div>
+          </div>`;
+      }).join('');
+
+      // ── GSAP timeline ───────────────────────────────────────────────────────
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
+
+      // Header fade in (0 → 0.6s)
+      gsap.set('#header-bar', { opacity: 0 });
+      tl.to('#header-bar', { opacity: 1, duration: 0.6 }, 0);
+
+      // OS lane sub-line state changes
+      tl.call(() => { document.getElementById('os-sub').textContent = 'All six stages complete · same morning'; }, [], BEATS.osLaneEnd);
+      tl.call(() => { document.getElementById('os-sub').textContent = 'Standing watch · compounding context'; }, [], 30);
+
+      // Trad lane sub-line state changes
+      tl.call(() => { document.getElementById('trad-sub').textContent = 'Time bleeds between handoffs'; }, [], 17.01);
+      tl.call(() => { document.getElementById('trad-sub').textContent = 'Deadline missed · opportunity lost'; }, [], 44.5);
+
+      // Trad day counter — interpolate through TRAD_STEPS
+      const dayState = { v: 1 };
+      const dayEl = document.getElementById('trad-day');
+      const dayKeys = [
+        { t: BEATS.laneStart, v: 1 },
+        ...TRAD_STEPS.map(s => ({ t: s.t, v: s.dayN })),
+        { t: BEATS.tradLaneEnd + 2, v: 31 },
+      ];
+      for (let i = 1; i < dayKeys.length; i++) {
+        const prev = dayKeys[i - 1];
+        const cur  = dayKeys[i];
+        tl.to(dayState, {
+          v: cur.v,
+          duration: Math.max(0.0001, cur.t - prev.t),
+          ease: 'none',
+          onUpdate: () => { dayEl.textContent = `Day ${Math.floor(dayState.v)}`; },
+        }, prev.t);
+      }
+
+      // OS clock display — discrete steps
+      OS_STEPS.forEach((s) => {
+        tl.call(() => { document.getElementById('os-clock').textContent = s.clock; }, [], s.t);
+      });
+
+      // Step entrances
+      function entranceFor(slotId, t) {
+        tl.to(`#${slotId}-act`, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, t);
+        tl.to(`#${slotId}-pl`,  { opacity: 0,         duration: 0.30, ease: 'power2.out' }, t);
+        tl.to(`#${slotId}-act .accent-bar`, { width: 6, duration: 0.45, ease: 'power2.out' }, t);
+      }
+      TRAD_STEPS.forEach((s, i) => entranceFor(`trad-${i}`, s.t));
+      OS_STEPS.forEach((s, i)   => entranceFor(`os-${i}`,   s.t));
+
+      // Waiting dot — show between trad steps
+      const waitingEl = document.getElementById('trad-waiting');
+      TRAD_STEPS.forEach((s, i) => {
+        if (i >= TRAD_STEPS.length - 1) return;
+        const nextS = TRAD_STEPS[i + 1];
+        const showStart = s.t + 1.2;
+        const showEnd   = nextS.t - 0.3;
+        if (showEnd <= showStart) return;
+        const y = i * (70 + 14) + 70 + 2;
+        const x = 880 - 168;
+        tl.call(() => {
+          waitingEl.style.left = x + 'px';
+          waitingEl.style.top  = y + 'px';
+        }, [], showStart);
+        tl.to(waitingEl, { opacity: 1, duration: 0.3 }, showStart);
+        tl.to(waitingEl, { opacity: 0, duration: 0.3 }, showEnd);
+      });
+      // Waiting dot pulse
+      const waitPulseState = { phase: 0 };
+      const waitPulseDot = waitingEl.querySelector('.pulse');
+      tl.to(waitPulseState, {
+        phase: DURATION * 4.0,
+        duration: DURATION,
+        ease: 'none',
+        onUpdate: () => {
+          const op = 0.6 + 0.4 * (0.5 + 0.5 * Math.sin(waitPulseState.phase));
+          waitPulseDot.style.opacity = op;
+        },
+      }, 0);
+
+      // DELIVERED badge
+      const deliveredT = OS_STEPS[OS_STEPS.length - 1].t + 0.5;
+      tl.to('#delivered-chip', { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, deliveredT);
+
+      // ── Compare ROI strip rise + per-card stagger ───────────────────────────
+      tl.to('#compare-strip', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, BEATS.laneStart - 0.4);
+      COMPARE_METRICS.forEach((m, i) => {
+        const start = BEATS.laneStart - 0.2 + i * 0.18;
+        tl.to(`#card-${i}`, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, start);
+      });
+
+      // ── Numeric metrics: chained linear tweens per Path side ────────────────
+      function wireNumericSide(metric, sideKey) {
+        const side = metric[sideKey];
+        const frames = side.frames;
+        const valEl  = document.getElementById(`m-${metric.key}-${sideKey}-val`);
+        const noteEl = document.getElementById(`m-${metric.key}-${sideKey}-note`);
+        const state = { v: frames[0][1] };
+        for (let i = 1; i < frames.length; i++) {
+          const [prevT, prevV] = frames[i - 1];
+          const [curT,  curV]  = frames[i];
+          tl.to(state, {
+            v: curV,
+            duration: Math.max(0.0001, curT - prevT),
+            ease: 'none',
+            onUpdate: () => {
+              valEl.textContent = `${state.v.toFixed(side.decimals || 0)}${metric.suffix || ''}`;
+              if (side.noteFn) noteEl.textContent = side.noteFn(state.v);
+            },
+          }, prevT);
+        }
+      }
+      function wireTextSide(metric, sideKey) {
+        const side = metric[sideKey];
+        const valEl  = document.getElementById(`m-${metric.key}-${sideKey}-val`);
+        const noteEl = document.getElementById(`m-${metric.key}-${sideKey}-note`);
+        side.frames.forEach(([t, v]) => {
+          tl.call(() => {
+            valEl.textContent = v;
+            if (side.noteFn) noteEl.textContent = side.noteFn(v);
+          }, [], t);
+        });
+      }
+      COMPARE_METRICS.forEach((m) => {
+        if (m.isText) {
+          wireTextSide(m, 'a');
+          wireTextSide(m, 'b');
+        } else {
+          wireNumericSide(m, 'a');
+          wireNumericSide(m, 'b');
+        }
+      });
+
+      // Pulse animation for Path B visibility dot (continuous)
+      const visBPulse = document.getElementById('m-visibility-b-pulse');
+      if (visBPulse) {
+        const pulseState = { phase: 0 };
+        tl.to(pulseState, {
+          phase: DURATION * 4.2,
+          duration: DURATION,
+          ease: 'none',
+          onUpdate: () => {
+            const op = 0.78 + 0.22 * (0.5 + 0.5 * Math.sin(pulseState.phase));
+            visBPulse.style.opacity = op;
+          },
+        }, 0);
+      }
+
+      // Outro overlay
+      tl.to('#outro', { opacity: 1, duration: 0.8, ease: 'power2.out' }, BEATS.summaryStart);
+
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

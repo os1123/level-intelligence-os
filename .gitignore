@@ -1,0 +1,9 @@
+# Keep secrets out of git
+.env
+.DS_Store
+
+# Local generated outputs
+share-site/
+data/permits.json
+data/history/*.json
+node_modules/
